@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Fixed Blue Background Image -->
+    <ImageView
+        android:id="@+id/ivChatBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/chat_bg_blue" />
+
+    <!-- Overlay to make text readable -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#20000000" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarChat"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:contentInsetStartWithNavigation="0dp"
+        app:navigationIconTint="@android:color/white"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/GlassyPopupTheme"
+        app:titleTextColor="@android:color/white">
+
+        <LinearLayout
+            android:id="@+id/layoutToolbarClickable"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivToolbarGroupImage"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/profile"
+                app:shapeAppearanceOverlay="@style/CircleImage"
+                app:strokeColor="@android:color/white"
+                app:strokeWidth="1dp" />
+
+            <TextView
+                android:id="@+id/tvToolbarGroupName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="Name"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tvToolbarGroupTag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/glass_tag_bg"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:text="GROUP"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Unknown Contact Action Bar -->
+    <LinearLayout
+        android:id="@+id/layoutUnknownContactActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/toolbarChat"
+        android:background="#E6FFFFFF"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:elevation="4dp">
+
+        <Button
+            android:id="@+id/btnBlockUnknown"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Block"
+            android:textColor="@color/red"
+            style="@style/Widget.MaterialComponents.Button.TextButton" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="24dp"
+            android:background="#33000000" />
+
+        <Button
+            android:id="@+id/btnAddUnknown"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Add"
+            android:textColor="@color/primary_blue"
+            style="@style/Widget.MaterialComponents.Button.TextButton" />
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMessages"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/layout_input_container"
+        android:layout_below="@id/layoutUnknownContactActions"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        app:stackFromEnd="true"
+        android:background="@android:color/transparent" />
+
+    <!-- Container for the attachment menu and input -->
+    <LinearLayout
+        android:id="@+id/layout_input_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:background="@android:color/transparent">
+
+        <!-- Attachment Menu (Initially Hidden) -->
+        <include
+            android:id="@+id/layoutAttachmentMenu"
+            layout="@layout/layout_attachment_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <!-- Normal Message Input Layout -->
+            <LinearLayout
+                android:id="@+id/layout_message_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="8dp"
+                android:gravity="bottom">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/chat_input_bg"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="4dp"
+                    android:elevation="2dp">
+
+                    <ImageButton
+                        android:id="@+id/btnEmoji"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/emoji"
+                        android:scaleType="centerInside"
+                        app:tint="@android:color/white" />
+
+                    <com.vanniktech.emoji.EmojiEditText
+                        android:id="@+id/etMessage"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:hint="Message"
+                        android:textColorHint="#B3FFFFFF"
+                        android:maxLines="6"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="10dp"
+                        android:textColor="@android:color/white"
+                        android:textSize="16sp" />
+
+                    <ImageButton
+                        android:id="@+id/btnAttach"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/clip"
+                        android:scaleType="centerInside"
+                        app:tint="@android:color/white" />
+
+                    <ImageButton
+                        android:id="@+id/btnCamera"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/photo__camera"
+                        android:scaleType="centerInside"
+                        app:tint="@android:color/white" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageButton
+                        android:id="@+id/btnMic"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/chat_send_btn_bg"
+                        android:src="@drawable/mic"
+                        android:padding="12dp"
+                        android:scaleType="centerInside"
+                        app:tint="@android:color/white"
+                        android:elevation="3dp" />
+
+                    <ImageButton
+                        android:id="@+id/btnSend"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/chat_send_btn_bg"
+                        android:src="@android:drawable/ic_menu_send"
+                        app:tint="@android:color/white"
+                        android:elevation="3dp"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Audio Recording UI Layout (Overlay) -->
+            <LinearLayout
+                android:id="@+id/layout_audio_recording"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:background="@android:color/transparent"
+                android:orientation="horizontal"
+                android:padding="8dp"
+                android:gravity="center_vertical"
+                android:visibility="gone"
+                android:elevation="6dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageButton
+                    android:id="@+id/btnDeleteRecording"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/trash"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="#D32F2F" />
+
+                <TextView
+                    android:id="@+id/tvRecordingTimer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="0:00"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/tvRecordingStatus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Recording..."
+                    android:textColor="#FFCDD2"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:layout_marginHorizontal="8dp"/>
+
+                <ImageButton
+                    android:id="@+id/btnPlayPreview"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@android:drawable/ic_media_play"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@android:color/white"
+                    android:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/btnSendRecording"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/chat_send_btn_bg"
+                    android:src="@android:drawable/ic_menu_send"
+                    android:padding="12dp"
+                    android:scaleType="centerInside"
+                    app:tint="@android:color/white"
+                    android:elevation="4dp" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <include
+        layout="@layout/layout_app_loading"
+        android:id="@+id/customLoading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+</RelativeLayout>

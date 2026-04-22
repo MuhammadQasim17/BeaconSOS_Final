@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1079626032629",
+    "firebase_url": "https://beacon-sos-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "beacon-sos",
+    "storage_bucket": "beacon-sos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1079626032629:android:5afd564aa637d8c2cd6cbc",
+        "android_client_info": {
+          "package_name": "com.alert.beaconsos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv6xYcvazAVoDxQCSjCUh-RHpDzP99qJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

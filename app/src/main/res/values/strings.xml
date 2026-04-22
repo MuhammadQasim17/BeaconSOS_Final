@@ -1,0 +1,170 @@
+<resources>
+    <string name="app_name">Beacon SOS</string>
+    <string name="title_beacon_sos">Beacon SOS</string>
+    <string name="tagline">Your Safety, Our Priority</string>
+    <string name="join_network">Join the Safety Network</string>
+
+    <!-- Auth -->
+    <string name="login">Login</string>
+    <string name="signup">Signup</string>
+    <string name="title_signup">Sign Up</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="btn_login">LOGIN</string>
+    <string name="btn_signup">SIGN UP</string>
+    <string name="btn_register_now">Register Now</string>
+    <string name="role_user">User (Protected)</string>
+    <string name="role_guardian">Guardian (Rescuer)</string>
+    <string name="role_admin">Administrator</string>
+
+    <!-- Fields -->
+    <string name="hint_name">Full Name</string>
+    <string name="hint_full_name">Full Name</string>
+    <string name="hint_email">Email Address</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_confirm_password">Confirm Password</string>
+    <string name="hint_phone">Phone Number</string>
+    <string name="hint_trigger">Trigger Word (e.g., help)</string>
+    <string name="label_select_role">Select Role</string>
+    <string name="label_config">Configuration</string>
+
+    <!-- Main/Home -->
+    <string name="btn_emergency">EMERGENCY</string>
+    <string name="btn_save">SAVE</string>
+    <string name="btn_save_config">SAVE CONFIGURATION</string>
+    <string name="status_monitoring">Monitoring for Voice Trigger...</string>
+    <string name="protection_status">Protection Status</string>
+    <string name="emergency_response">Emergency Response</string>
+    <string name="btn_trusted_contacts">Trusted Contacts</string>
+    <string name="btn_alert_message">Alert Message</string>
+    <string name="sos">SOS</string>
+
+    <!-- Settings Page -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_theme_mode">Display Mode</string>
+    <string name="theme_light">Light Mode</string>
+    <string name="theme_dark">Dark Mode</string>
+    <string name="settings_language">App Language</string>
+    <string name="settings_language_desc">Changing the language will update all text in the app.</string>
+
+    <!-- Navigation -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_message">Message</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Profile Page -->
+    <string name="profile_settings">Profile &amp; Settings</string>
+    <string name="profile_phone">Phone: %1$s</string>
+    <string name="profile_role">Role: %1$s</string>
+    <string name="option_edit_profile">Edit Profile</string>
+    <string name="option_change_password">Change Password</string>
+    <string name="option_settings">Settings</string>
+    <string name="option_feedback">Feedback</string>
+    <string name="option_about">About Beacon SOS</string>
+    <string name="btn_logout">LOGOUT</string>
+    <string name="app_version">Version 1.0.0</string>
+    <string name="no_contacts_set">No contacts set</string>
+
+    <!-- Edit Profile -->
+    <string name="edit_profile_title">Edit Profile</string>
+    <string name="edit_your_profile">Edit Your Profile</string>
+    <string name="btn_save_changes">SAVE CHANGES</string>
+
+    <!-- Change Password -->
+    <string name="change_password_title">Change Password</string>
+    <string name="hint_current_password">Current Password</string>
+    <string name="hint_new_password">New Password</string>
+    <string name="hint_confirm_new_password">Confirm New Password</string>
+    <string name="btn_update_password">Update Password</string>
+    <string name="btn_forgot_password_verify">Forgot Password? Verify Email</string>
+
+    <!-- Alert Message -->
+    <string name="emergency_config">Emergency Configuration</string>
+    <string name="custom_alert_message">Custom Alert Message</string>
+    <string name="hint_type_message">Type your emergency message...</string>
+    <string name="select_contacts_alert">Select Default Contacts to Alert:</string>
+    <string name="btn_send_alert_now">SEND ALERT NOW</string>
+    <string name="volume_sos_title">Volume Button SOS</string>
+    <string name="volume_sos_desc">Press Volume Up twice to send SOS</string>
+    <string name="shake_sos_title">Shake Detection</string>
+    <string name="shake_sos_desc">Shake your phone to trigger SOS</string>
+
+    <!-- Trusted Contacts -->
+    <string name="title_trusted_contacts">Trusted Contacts</string>
+    <string name="label_your_trusted_contacts">Your Trusted Contacts:</string>
+    <string name="btn_pick_from_contacts">PICK FROM PHONE CONTACTS</string>
+    <string name="hint_contact_name">Contact Name</string>
+    <string name="hint_phone_number">Phone Number</string>
+    <string name="hint_relation">Relation (e.g. Sister)</string>
+    <string name="btn_save_contact">SAVE CONTACT</string>
+    <string name="btn_add_trusted_contact">Add Trusted Contact</string>
+    <string name="title_edit_contact">Edit Contact</string>
+    <string name="btn_update_contact">UPDATE CONTACT</string>
+    <string name="btn_cancel">CANCEL</string>
+
+    <!-- Messages & Errors -->
+    <string name="welcome_back">Welcome back, %1$s</string>
+    <string name="error_invalid_login">Invalid Email or Password</string>
+    <string name="error_fill_all_fields">Please fill all fields</string>
+    <string name="error_pass_requirements">Password does not meet requirements</string>
+    <string name="error_pass_match">Passwords do not match</string>
+    <string name="error_invalid_phone">Please enter a valid phone number</string>
+    <string name="msg_account_created">Account created! Please login.</string>
+    <string name="msg_profile_updated">Profile Updated!</string>
+    <string name="msg_photo_updated">Profile picture updated!</string>
+    <string name="msg_contact_added">Contact Added</string>
+    <string name="msg_contact_removed">Contact Removed</string>
+    <string name="msg_contact_updated">Contact Updated Successfully!</string>
+    <string name="msg_opening_map">Opening Map...</string>
+    <string name="msg_opening_messages">Opening Messages...</string>
+    <string name="msg_opening_search">Opening Search...</string>
+    <string name="delete_confirm_title">Delete Contact</string>
+    <string name="delete_confirm_msg">Are you sure you want to delete this contact?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <!-- Password Rules -->
+    <string name="rule_number_check">✔ At least one number</string>
+    <string name="rule_number_error">✖ At least one number</string>
+    <string name="rule_lower_check">✔ At least one lowercase letter</string>
+    <string name="rule_lower_error">✖ At least one lowercase letter</string>
+    <string name="rule_upper_check">✔ At least one uppercase letter</string>
+    <string name="rule_upper_error">✖ At least one uppercase letter</string>
+    <string name="rule_special_check">✔ At least one special character</string>
+    <string name="rule_special_error">✖ At least one special character</string>
+    <string name="rule_length_check">✔ At least 8 characters</string>
+    <string name="rule_length_error">✖ At least 8 characters</string>
+
+    <!-- Menu Items -->
+    <string name="action_add_member">Add Member</string>
+    <string name="action_group_settings">Group Settings</string>
+
+    <!-- Chat -->
+    <string name="hint_type_message_chat">Type a message...</string>
+    <string name="search_chats">Search Chats</string>
+    <string name="hint_search_name">Search name...</string>
+    <string name="msg_all_read">All messages marked as read</string>
+    <string name="msg_starred">Starred messages</string>
+    <string name="create_new_group">Create New Group</string>
+    <string name="hint_group_name">Group Name</string>
+    <string name="btn_create">Create</string>
+    <string name="file_options_coming_soon">File options coming soon</string>
+    <string name="recording_toast">Recording...</string>
+    <string name="sending_prefix">Sending</string>
+    <string name="upload_failed">Upload failed</string>
+    <string name="connecting_chat">Connecting to Chat</string>
+    <string name="type_image">Image</string>
+    <string name="type_audio">Audio Message</string>
+    <string name="initial_timer_value">0:00</string>
+    <string name="group_label">GROUP</string>
+
+    <!-- Emergency Services -->
+    <string name="service_icon">Service Icon</string>
+    <string name="call_confirmation_title">Call %1$s?</string>
+    <string name="call_confirmation_subtitle">Calling %1$s through your registered number: %2$s</string>
+    <string name="permission_denied_dialer">Permission denied. Opening dialer.</string>
+
+</resources>

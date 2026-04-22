@@ -1,0 +1,67 @@
+<resources>
+    <string name="app_name">بیکن ایس او ایس</string>
+    <string name="title_beacon_sos">بیکن ایس او ایس</string>
+    <string name="btn_emergency">ایمرجنسی</string>
+    <string name="btn_save">کنفیگریشن محفوظ کریں</string>
+    <string name="status_monitoring">حالت: مانیٹرنگ ہو رہی ہے…</string>
+    <string name="hint_phone">ایمرجنسی فون نمبر</string>
+    <string name="hint_trigger">ٹرگر لفظ (مثلاً مدد)</string>
+    <string name="label_config">کنفیگریشن</string>
+
+    <!-- Settings Page -->
+    <string name="settings_title">ترتیبات</string>
+    <string name="settings_theme_mode">ڈسپلے موڈ</string>
+    <string name="theme_light">لائٹ موڈ</string>
+    <string name="theme_dark">ڈارک موڈ</string>
+    <string name="settings_language">ایپ کی زبان</string>
+    <string name="settings_language_desc">زبان تبدیل کرنے سے ایپ کی تمام تحریریں اپ ڈیٹ ہو جائیں گی۔</string>
+
+    <!-- Signup Strings -->
+    <string name="title_signup">سائن اپ</string>
+    <string name="hint_name">پورا نام</string>
+    <string name="hint_email">ای میل ایڈریس</string>
+    <string name="hint_password">پاس ورڈ</string>
+    <string name="label_select_role">اپنا کردار منتخب کریں:</string>
+    <string name="role_user">صارف (محفوظ)</string>
+    <string name="role_guardian">گارڈین (بچانے والا)</string>
+    <string name="role_admin">ایڈمنسٹریٹر</string>
+    <string name="btn_signup">ابھی رجسٹر کریں</string>
+
+    <!-- Navigation Drawer -->
+    <string name="navigation_drawer_open">نیویگیشن دراز کھولیں</string>
+    <string name="navigation_drawer_close">نیویگیشن دراز بند کریں</string>
+
+    <!-- Profile Page -->
+    <string name="profile_phone">فون: %1$s</string>
+    <string name="profile_role">کردار: %1$s</string>
+    <string name="msg_opening_map">نقشہ کھل رہا ہے…</string>
+    <string name="msg_opening_messages">پیغامات کھل رہے ہیں…</string>
+    <string name="msg_opening_search">تلاش کھل رہی ہے…</string>
+    <string name="no_contacts_set">کوئی رابطہ سیٹ نہیں ہے</string>
+
+    <!-- Messages & Errors -->
+    <string name="welcome_back">خوش آمدید، %1$s</string>
+    <string name="error_invalid_login">غلط ای میل یا پاس ورڈ</string>
+    <string name="error_fill_all_fields">براہ کرم تمام خانے پُر کریں</string>
+    <string name="error_pass_requirements">پاس ورڈ شرائط پر پورا نہیں اترتا</string>
+    <string name="error_pass_match">پاس ورڈز مطابقت نہیں رکھتے</string>
+    <string name="error_invalid_phone">براہ کرم درست فون نمبر درج کریں</string>
+    <string name="msg_account_created">اکاؤنٹ بن گیا! براہ کرم لاگ ان کریں۔</string>
+    <string name="msg_profile_updated">پروفائل اپ ڈیٹ ہو گئی!</string>
+    <string name="msg_photo_updated">پروفائل تصویر اپ ڈیٹ ہو گئی!</string>
+
+    <!-- Trusted Contacts -->
+    <string name="title_trusted_contacts">قابل اعتماد رابطے</string>
+    <string name="btn_add_trusted_contact">قابل اعتماد رابطہ شامل کریں</string>
+    <string name="btn_save_contact">رابطہ محفوظ کریں</string>
+    <string name="label_your_trusted_contacts">آپ کے قابل اعتماد رابطے:</string>
+    <string name="hint_contact_name">رابطے کا نام</string>
+    <string name="hint_phone_number">فون نمبر</string>
+    <string name="hint_relation">رشتہ (مثلاً بہن)</string>
+    <string name="msg_contact_added">رابطہ شامل کر دیا گیا</string>
+    <string name="msg_contact_removed">رابطہ ہٹا دیا گیا</string>
+    <string name="delete_confirm_title">رابطہ حذف کریں</string>
+    <string name="delete_confirm_msg">کیا آپ واقعی اس رابطے کو حذف کرنا چاہتے ہیں؟</string>
+    <string name="yes">جی ہاں</string>
+    <string name="no">نہیں</string>
+</resources>

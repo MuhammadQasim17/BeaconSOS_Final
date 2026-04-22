@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">بیکن SOS</string>
+    <string name="title_beacon_sos">بیکن SOS</string>
+    <string name="tagline">سلامتك هي أولويتنا</string>
+    <string name="join_network">انضم إلى شبكة الأمان</string>
+
+    <!-- Auth -->
+    <string name="login">تسجيل الدخول</string>
+    <string name="signup">إنشاء حساب</string>
+    <string name="forgot_password">هل نسيت كلمة السر؟</string>
+    <string name="btn_login">تسجيل الدخول</string>
+    <string name="btn_signup">إنشاء حساب</string>
+    <string name="btn_register_now">سجل الآن</string>
+
+    <!-- Fields -->
+    <string name="hint_full_name">الاسم الكامل</string>
+    <string name="hint_email">البريد الإلكتروني</string>
+    <string name="hint_password">كلمة المرور</string>
+    <string name="hint_confirm_password">تأكيد كلمة المرور</string>
+    <string name="hint_phone">رقم الهاتف</string>
+    <string name="label_select_role">اختر دورك</string>
+
+    <!-- Main/Home -->
+    <string name="btn_emergency">حالة طوارئ</string>
+    <string name="btn_save_config">حفظ الإعدادات</string>
+    <string name="status_monitoring">جاري مراقبة مفتاح الصوت...</string>
+    <string name="protection_status">حالة الحماية</string>
+    <string name="emergency_response">الاستجابة للطوارئ</string>
+    <string name="btn_trusted_contacts">جهات الاتصال الموثوقة</string>
+    <string name="btn_alert_message">رسالة التنبيه</string>
+    <string name="sos">SOS</string>
+
+    <!-- Settings Page -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_theme_mode">وضع العرض</string>
+    <string name="theme_light">الوضع الفاتح</string>
+    <string name="theme_dark">الوضع الداكن</string>
+    <string name="settings_language">لغة التطبيق</string>
+    <string name="settings_language_desc">سيؤدي تغيير اللغة إلى تحديث جميع النصوص في التطبيق.</string>
+
+    <!-- Navigation -->
+    <string name="navigation_drawer_open">فتح درج التنقل</string>
+    <string name="navigation_drawer_close">إغلاق درج التنقل</string>
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_map">الخريطة</string>
+    <string name="nav_message">الرسائل</string>
+    <string name="nav_search">البحث</string>
+    <string name="nav_profile">الملف الشخصي</string>
+
+    <!-- Profile Page -->
+    <string name="profile_settings">الملف الشخصي والإعدادات</string>
+    <string name="option_edit_profile">تعديل الملف الشخصي</string>
+    <string name="option_change_password">تغيير كلمة المرور</string>
+    <string name="option_settings">الإعدادات</string>
+    <string name="option_feedback">الملاحظات</string>
+    <string name="option_about">حول بیکن SOS</string>
+    <string name="btn_logout">تسجيل الخروج</string>
+    <string name="app_version">الإصدار 1.0.0</string>
+
+    <!-- Edit Profile -->
+    <string name="edit_profile_title">تعديل الملف الشخصي</string>
+    <string name="edit_your_profile">تعديل ملفك الشخصي</string>
+    <string name="btn_save_changes">حفظ التغييرات</string>
+
+    <!-- Change Password -->
+    <string name="change_password_title">تغيير كلمة المرور</string>
+    <string name="hint_current_password">كلمة المرور الحالية</string>
+    <string name="hint_new_password">كلمة المرور الجديدة</string>
+    <string name="hint_confirm_new_password">تأكيد كلمة المرور الجديدة</string>
+    <string name="btn_update_password">تحديث كلمة المرور</string>
+    <string name="btn_forgot_password_verify">هل نسيت كلمة السر؟ تحقق من بريدك الإلكتروني</string>
+
+    <!-- Alert Message -->
+    <string name="emergency_config">إعدادات الطوارئ</string>
+    <string name="custom_alert_message">رسالة تنبيه مخصصة</string>
+    <string name="hint_type_message">اكتب رسالة الطوارئ الخاصة بك...</string>
+    <string name="select_contacts_alert">اختر جهات الاتصال الافتراضية للتنبيه:</string>
+    <string name="btn_send_alert_now">أرسل التنبيه الآن</string>
+
+    <!-- Trusted Contacts -->
+    <string name="title_trusted_contacts">جهات الاتصال الموثوقة</string>
+    <string name="label_your_trusted_contacts">جهات الاتصال الموثوقة الخاصة بك:</string>
+    <string name="btn_pick_from_contacts">اختر من جهات اتصال الهاتف</string>
+    <string name="hint_contact_name">اسم جهة الاتصال</string>
+    <string name="hint_phone_number">رقم الهاتف</string>
+    <string name="hint_relation">العلاقة (مثلاً: أخت)</string>
+    <string name="btn_save_contact">حفظ جهة الاتصال</string>
+    <string name="btn_add_trusted_contact">إضافة جهة اتصال موثوقة</string>
+
+    <!-- Messages & Errors -->
+    <string name="welcome_back">مرحباً بعودتك، %1$s</string>
+    <string name="error_invalid_login">البريد الإلكتروني أو كلمة المرور غير صالحة</string>
+    <string name="error_fill_all_fields">يرجى ملء جميع الحقول</string>
+    <string name="error_pass_requirements">كلمة المرور لا تستوفي المتطلبات</string>
+    <string name="error_pass_match">كلمات المرور غير متطابقة</string>
+    <string name="error_invalid_phone">يرجى إدخال رقم هاتف صالح</string>
+    <string name="msg_account_created">تم إنشاء الحساب! يرجى تسجيل الدخول.</string>
+    <string name="msg_profile_updated">تم تحديث الملف الشخصي!</string>
+    <string name="msg_photo_updated">تم تحديث صورة الملف الشخصي!</string>
+    <string name="msg_contact_added">تم إضافة جهة الاتصال</string>
+    <string name="msg_contact_removed">تم إزالة جهة الاتصال</string>
+    <string name="delete_confirm_title">حذف جهة الاتصال</string>
+    <string name="delete_confirm_msg">هل أنت متأكد أنك تريد حذف جهة الاتصال هذه؟</string>
+    <string name="yes">نعم</string>
+    <string name="no">لا</string>
+</resources>
