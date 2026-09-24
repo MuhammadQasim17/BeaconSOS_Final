@@ -1,6 +1,5 @@
 package com.alert.beaconsos.audio;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioFormat;
@@ -24,15 +23,14 @@ public class AudioDetector {
     private final Context context;
     private SpeechRecognizer speechRecognizer;
     private final TriggerManager triggerManager;
-    private boolean isListening = false;
-    private boolean isSpeechRecognizerActive = false;
+    private volatile boolean isListening = false;
+    private volatile boolean isSpeechRecognizerActive = false;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     
-    // Silent monitoring variables (VAD - Voice Activity Detection)
     private AudioRecord audioRecord;
     private Thread monitoringThread;
-    private static final int SAMPLE_RATE = 8000;
-    private static final int THRESHOLD = 2500; // Adjust loudness threshold
+    private static final int SAMPLE_RATE = 16000;
+    private static final int THRESHOLD = 800; // Lowered for better sensitivity
 
     public interface OnTriggerDetectedListener {
         void onTriggerDetected();
@@ -41,65 +39,86 @@ public class AudioDetector {
     private final OnTriggerDetectedListener listener;
 
     public AudioDetector(Context context, OnTriggerDetectedListener listener) {
-        this.context = context;
+        this.context = context.getApplicationContext();
         this.listener = listener;
         this.triggerManager = new TriggerManager(context);
     }
 
-    public void startListening() {
+    public synchronized void startListening() {
         if (isListening) return;
         isListening = true;
+        Log.d(TAG, "AudioDetector: startListening");
         startSilentMonitoring();
     }
 
-    public void stopListening() {
+    public synchronized void stopListening() {
         isListening = false;
+        isSpeechRecognizerActive = false;
         stopSilentMonitoring();
-        stopSpeechRecognizer();
+        destroySpeechRecognizer();
     }
 
-    private void startSilentMonitoring() {
-        if (monitoringThread != null) return;
+    private synchronized void startSilentMonitoring() {
+        if (!isListening || isSpeechRecognizerActive || monitoringThread != null) return;
 
         int bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
         if (bufferSize == AudioRecord.ERROR_BAD_VALUE) return;
 
         try {
             audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+            if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
+                Log.e(TAG, "AudioRecord initialization failed");
+                return;
+            }
             audioRecord.startRecording();
+            Log.d(TAG, "Silent monitoring started");
         } catch (SecurityException e) {
-            Log.e(TAG, "Mic permission missing for silent monitor");
+            Log.e(TAG, "Mic permission denied");
+            return;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to start AudioRecord: " + e.getMessage());
             return;
         }
 
         monitoringThread = new Thread(() -> {
             short[] buffer = new short[bufferSize];
-            while (isListening) {
-                if (audioRecord == null) break;
+            while (isListening && !isSpeechRecognizerActive) {
+                AudioRecord currentRecorder = audioRecord;
+                if (currentRecorder == null || currentRecorder.getState() != AudioRecord.STATE_INITIALIZED) break;
                 
-                int read = audioRecord.read(buffer, 0, buffer.length);
-                if (read > 0 && !isSpeechRecognizerActive) {
-                    double amplitude = 0;
-                    for (short s : buffer) amplitude += Math.abs(s);
-                    amplitude /= read;
+                try {
+                    int read = currentRecorder.read(buffer, 0, buffer.length);
+                    if (read > 0 && !isSpeechRecognizerActive) {
+                        long sum = 0;
+                        for (int i = 0; i < read; i++) sum += Math.abs(buffer[i]);
+                        double amplitude = (double) sum / read;
 
-                    if (amplitude > THRESHOLD) {
-                        Log.d(TAG, "Loud sound detected (" + amplitude + "), triggering speech recognizer");
-                        mainHandler.post(this::triggerSpeechRecognizer);
-                        // Sleep a bit to let recognition happen
-                        try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
+                        if (amplitude > THRESHOLD) {
+                            Log.d(TAG, "Loud sound detected: " + (int)amplitude);
+                            // Critical: Release MIC immediately in this thread before posting
+                            releaseAudioRecordInternal();
+                            mainHandler.post(this::triggerSpeechRecognizer);
+                            return; // End thread
+                        }
                     }
+                } catch (Exception e) {
+                    Log.e(TAG, "Monitoring error: " + e.getMessage());
+                    break;
                 }
-                try { Thread.sleep(100); } catch (InterruptedException ignored) {}
+                
+                try { Thread.sleep(200); } catch (InterruptedException ignored) {}
             }
-        });
+            Log.d(TAG, "Monitoring thread ending");
+        }, "AudioDetector-Monitor");
         monitoringThread.start();
     }
 
-    private void stopSilentMonitoring() {
+    private synchronized void releaseAudioRecordInternal() {
         if (audioRecord != null) {
             try {
-                audioRecord.stop();
+                if (audioRecord.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
+                    audioRecord.stop();
+                }
                 audioRecord.release();
             } catch (Exception ignored) {}
             audioRecord = null;
@@ -107,60 +126,94 @@ public class AudioDetector {
         monitoringThread = null;
     }
 
+    private synchronized void stopSilentMonitoring() {
+        releaseAudioRecordInternal();
+    }
+
     private void triggerSpeechRecognizer() {
         if (isSpeechRecognizerActive || !isListening) return;
         isSpeechRecognizerActive = true;
 
-        if (speechRecognizer != null) speechRecognizer.destroy();
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
+        Log.d(TAG, "Preparing SpeechRecognizer...");
         
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true);
-        }
-
-        speechRecognizer.setRecognitionListener(new RecognitionListener() {
-            @Override public void onReadyForSpeech(Bundle params) { Log.d(TAG, "Speech ready"); }
-            @Override public void onBeginningOfSpeech() {}
-            @Override public void onRmsChanged(float rmsdB) {}
-            @Override public void onBufferReceived(byte[] buffer) {}
-            @Override public void onEndOfSpeech() {}
-            @Override public void onError(int error) { 
-                Log.e(TAG, "Recognition error: " + error);
+        // Give the OS a full second to clear the MIC lock from AudioRecord
+        mainHandler.postDelayed(() -> {
+            if (!isListening) {
                 isSpeechRecognizerActive = false;
+                return;
             }
-            @Override public void onResults(Bundle results) {
-                ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                if (matches != null) {
-                    String trigger = triggerManager.getVoiceTriggerPhrase();
-                    for (String result : matches) {
-                        if (result.toLowerCase().contains(trigger.toLowerCase())) {
-                            if (listener != null) listener.onTriggerDetected();
-                            break;
+
+            destroySpeechRecognizer();
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
+            
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+            intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+            
+            speechRecognizer.setRecognitionListener(new RecognitionListener() {
+                @Override public void onReadyForSpeech(Bundle params) { Log.d(TAG, "SpeechReady"); }
+                @Override public void onBeginningOfSpeech() { Log.d(TAG, "SpeechBeginning"); }
+                @Override public void onRmsChanged(float rmsdB) {}
+                @Override public void onBufferReceived(byte[] buffer) {}
+                @Override public void onEndOfSpeech() { Log.d(TAG, "SpeechEnd"); }
+                
+                @Override public void onError(int error) { 
+                    Log.e(TAG, "SpeechError: " + error);
+                    resetAfterSpeech();
+                }
+                
+                @Override public void onResults(Bundle results) {
+                    checkMatches(results);
+                    resetAfterSpeech();
+                }
+                
+                @Override public void onPartialResults(Bundle partialResults) {
+                    checkMatches(partialResults);
+                }
+                
+                @Override public void onEvent(int eventType, Bundle params) {}
+
+                private void checkMatches(Bundle bundle) {
+                    ArrayList<String> matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                    if (matches != null) {
+                        String trigger = triggerManager.getVoiceTriggerPhrase();
+                        Log.d(TAG, "Comparing speech with trigger: " + trigger);
+                        for (String result : matches) {
+                            if (result.toLowerCase().contains(trigger.toLowerCase())) {
+                                Log.d(TAG, "VOICE TRIGGER MATCHED!");
+                                if (listener != null) listener.onTriggerDetected();
+                                break;
+                            }
                         }
                     }
                 }
-                isSpeechRecognizerActive = false;
-            }
-            @Override public void onPartialResults(Bundle partialResults) {}
-            @Override public void onEvent(int eventType, Bundle params) {}
-        });
 
-        speechRecognizer.startListening(intent);
+                private void resetAfterSpeech() {
+                    isSpeechRecognizerActive = false;
+                    destroySpeechRecognizer();
+                    if (isListening) startSilentMonitoring();
+                }
+            });
+
+            try {
+                speechRecognizer.startListening(intent);
+                Log.d(TAG, "SpeechRecognizer listening started");
+            } catch (Exception e) {
+                Log.e(TAG, "StartListening error: " + e.getMessage());
+                isSpeechRecognizerActive = false;
+                startSilentMonitoring();
+            }
+        }, 1000); // 1 second delay for hardware handoff
     }
 
-    private void stopSpeechRecognizer() {
-        isSpeechRecognizerActive = false;
-        mainHandler.post(() -> {
-            if (speechRecognizer != null) {
-                speechRecognizer.stopListening();
+    private void destroySpeechRecognizer() {
+        if (speechRecognizer != null) {
+            try {
                 speechRecognizer.cancel();
                 speechRecognizer.destroy();
-                speechRecognizer = null;
-            }
-        });
+            } catch (Exception ignored) {}
+            speechRecognizer = null;
+        }
     }
 }

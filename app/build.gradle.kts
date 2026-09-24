@@ -1,9 +1,21 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.services)
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    FileInputStream(localPropertiesFile).use { stream ->
+        localProperties.load(stream)
+    }
+}
+val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY") ?: "AIzaSyCESXL8fPZmZbylwAxBiJQM0Tk-mzqKtPg"
 
 android {
     namespace = "com.alert.beaconsos"
@@ -15,6 +27,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -40,6 +55,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {
@@ -56,6 +72,7 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.countrycodepicker)
     implementation(libs.gson)
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
     
     // Navigation
     implementation(libs.androidx.navigation.fragment.ktx)
@@ -88,6 +105,9 @@ dependencies {
     // Emoji Support
     implementation(libs.vanniktech.emoji.google)
     implementation(libs.vanniktech.emoji)
+
+    // Image Cropping
+    implementation("com.github.CanHub:Android-Image-Cropper:4.5.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -12,8 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -26,7 +24,7 @@ import com.alert.beaconsos.data.EmergencyService;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmergencyNumbersActivity extends AppCompatActivity {
+public class EmergencyNumbersActivity extends BaseActivity {
 
     private static final int PERMISSION_REQUEST_CALL = 101;
     private String pendingNumber;
@@ -59,15 +57,12 @@ public class EmergencyNumbersActivity extends AppCompatActivity {
     }
 
     private void showCallConfirmationDialog(String name, String number) {
-        new AlertDialog.Builder(this)
-                .setTitle("Confirm Emergency Call")
-                .setMessage("Are you sure you want to call " + name + " (" + number + ")?")
-                .setPositiveButton("Call Now", (dialog, which) -> {
-                    makeCall(number);
-                })
-                .setNegativeButton("Cancel", null)
-                .setIcon(android.R.drawable.ic_menu_call)
-                .show();
+        showGlassyConfirmDialog(
+                "Confirm Emergency Call",
+                "Are you sure you want to call " + name + " (" + number + ")?",
+                "CALL NOW",
+                () -> makeCall(number)
+        );
     }
 
     private void makeCall(String number) {

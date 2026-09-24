@@ -4,14 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Rect;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
+import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,15 +19,14 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,49 +38,45 @@ import com.alert.beaconsos.data.TriggerManager;
 import com.alert.beaconsos.location.LocationHelper;
 import com.alert.beaconsos.utils.LoadingUtils;
 import com.alert.beaconsos.utils.SmsHelper;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.SetOptions;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
 public class AlertMessageActivity extends AppCompatActivity {
 
-    private static final String TAG = "AlertMessageActivity";
-    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
-
     private EditText etAlertMessage, etVoiceTrigger;
-    private SwitchCompat switchVolumeTrigger, switchShakeTrigger;
-    private RecyclerView rvSelectContacts, rvSosHistory;
+    private RecyclerView rvSelectContacts;
     private TriggerManager triggerManager;
     private LocationHelper locationHelper;
     private SmsHelper smsHelper;
     private Set<String> currentSelectedIds = new HashSet<>();
-    private Button btnSaveConfig, btnTabConfig, btnTabHistory;
-    private View viewConfig, viewHistory;
-    private TextView tvEmptyHistory;
+    private Button btnSaveConfig;
     private View customLoading;
     private TextView tvLoadingText;
+    private ListenerRegistration recipientsListener;
+    private String userId;
 
-    // Audio recording variables
-    private FloatingActionButton fabRecord;
-    private ImageButton btnPlayAudio, btnDeleteAudio;
-    private TextView tvAudioStatus, tvAudioTimer;
-    private MediaRecorder recorder = null;
-    private MediaPlayer player = null;
-    private String fileName = null;
-    private boolean isRecording = false;
-    private boolean isPlaying = false;
-    private Handler timerHandler = new Handler();
-    private int secondsElapsed = 0;
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) openContactPicker();
+                else Toast.makeText(this, "Permission denied to read contacts", Toast.LENGTH_SHORT).show();
+            });
+
+    private final ActivityResultLauncher<Intent> contactPickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    processPickedContact(result.getData().getData());
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,8 +86,7 @@ public class AlertMessageActivity extends AppCompatActivity {
         triggerManager = new TriggerManager(this);
         locationHelper = new LocationHelper(this);
         smsHelper = new SmsHelper(this);
-
-        fileName = getExternalCacheDir().getAbsolutePath() + "/sos_audio_message.3gp";
+        userId = FirebaseAuth.getInstance().getUid();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -102,45 +95,66 @@ public class AlertMessageActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Navigation Tabs
-        btnTabConfig = findViewById(R.id.btnTabConfig);
-        btnTabHistory = findViewById(R.id.btnTabHistory);
-        viewConfig = findViewById(R.id.viewConfig);
-        viewHistory = findViewById(R.id.viewHistory);
-        rvSosHistory = findViewById(R.id.rvSosHistory);
-        tvEmptyHistory = findViewById(R.id.tvEmptyHistory);
-
-        btnTabConfig.setOnClickListener(v -> showTab(true));
-        btnTabHistory.setOnClickListener(v -> showTab(false));
-
         etAlertMessage = findViewById(R.id.etAlertMessage);
         etVoiceTrigger = findViewById(R.id.etVoiceTrigger);
-        switchVolumeTrigger = findViewById(R.id.switchVolumeTrigger);
-        switchShakeTrigger = findViewById(R.id.switchShakeTrigger);
         rvSelectContacts = findViewById(R.id.rvSelectContacts);
         btnSaveConfig = findViewById(R.id.btnSaveAlertConfig);
         Button btnSendAlert = findViewById(R.id.btnSendAlert);
-        
-        fabRecord = findViewById(R.id.fabRecord);
-        btnPlayAudio = findViewById(R.id.btnPlayAudio);
-        btnDeleteAudio = findViewById(R.id.btnDeleteAudio);
-        tvAudioStatus = findViewById(R.id.tvAudioStatus);
-        tvAudioTimer = findViewById(R.id.tvAudioTimer);
+        Button btnSelectFromContacts = findViewById(R.id.btnSelectFromContactsAlert);
+        TextView tvClearAll = findViewById(R.id.tvClearAllRecipients);
         
         customLoading = findViewById(R.id.customLoading);
         tvLoadingText = findViewById(R.id.tvLoadingText);
 
+        if (btnSaveConfig != null) {
+            btnSaveConfig.setOnClickListener(v -> saveConfiguration());
+        }
+        
         loadConfiguration();
-        setupHistoryList();
 
-        btnSaveConfig.setOnClickListener(v -> saveConfiguration());
         btnSendAlert.setOnClickListener(v -> sendAlert());
-        fabRecord.setOnClickListener(v -> toggleRecording());
-        btnPlayAudio.setOnClickListener(v -> togglePlayback());
-        btnDeleteAudio.setOnClickListener(v -> deleteAudio());
+        btnSelectFromContacts.setOnClickListener(v -> checkPermissionAndOpenPicker());
+        if (tvClearAll != null) {
+            tvClearAll.setOnClickListener(v -> {
+                if (!currentSelectedIds.isEmpty()) {
+                    currentSelectedIds.clear();
+                    setupContactsList();
+                    checkIfChanged();
+                    Toast.makeText(this, "All selections cleared", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
-        setupContactsList();
+        observeRecipients();
         setupChangeListeners();
+    }
+
+    private void observeRecipients() {
+        if (userId == null) return;
+
+        recipientsListener = FirebaseFirestore.getInstance()
+                .collection("users").document(userId)
+                .collection("sos_recipients")
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) return;
+
+                    List<Contact> recipients = new ArrayList<>();
+                    if (value != null) {
+                        for (QueryDocumentSnapshot doc : value) {
+                            recipients.add(doc.toObject(Contact.class));
+                        }
+                    }
+                    triggerManager.saveSosRecipients(recipients);
+                    setupContactsList();
+                });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (recipientsListener != null) {
+            recipientsListener.remove();
+        }
     }
 
     @Override
@@ -160,27 +174,6 @@ public class AlertMessageActivity extends AppCompatActivity {
             }
         }
         return super.dispatchTouchEvent(event);
-    }
-
-    private void showTab(boolean isConfig) {
-        if (isConfig) {
-            viewConfig.setVisibility(View.VISIBLE);
-            viewHistory.setVisibility(View.GONE);
-            btnTabConfig.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.white));
-            btnTabConfig.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
-            btnTabHistory.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.transparent));
-            btnTabHistory.setTextColor(ContextCompat.getColor(this, R.color.white));
-            findViewById(R.id.layout_bottom_btns).setVisibility(View.VISIBLE);
-        } else {
-            viewConfig.setVisibility(View.GONE);
-            viewHistory.setVisibility(View.VISIBLE);
-            btnTabHistory.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.white));
-            btnTabHistory.setTextColor(ContextCompat.getColor(this, R.color.primary_blue));
-            btnTabConfig.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.transparent));
-            btnTabConfig.setTextColor(ContextCompat.getColor(this, R.color.white));
-            findViewById(R.id.layout_bottom_btns).setVisibility(View.GONE);
-            loadHistory();
-        }
     }
 
     private void showLoading(String message) {
@@ -205,34 +198,15 @@ public class AlertMessageActivity extends AppCompatActivity {
         }
         
         etVoiceTrigger.setText(triggerManager.getVoiceTriggerPhrase());
-        switchVolumeTrigger.setChecked(triggerManager.isVolumeTriggerEnabled());
-        switchShakeTrigger.setChecked(triggerManager.isShakeTriggerEnabled());
         
-        String savedAudioPath = triggerManager.getAudioMessagePath();
-        if (savedAudioPath != null && new File(savedAudioPath).exists()) {
-            fileName = savedAudioPath;
-            
-            MediaPlayer tempPlayer = new MediaPlayer();
-            try {
-                tempPlayer.setDataSource(fileName);
-                tempPlayer.prepare();
-                int durationSecs = tempPlayer.getDuration() / 1000;
-                tvAudioStatus.setText("Saved (" + formatTime(durationSecs) + ")");
-                tempPlayer.release();
-            } catch (IOException e) {
-                tvAudioStatus.setText("Audio message saved");
-            }
-            
-            btnPlayAudio.setVisibility(View.VISIBLE);
-            btnDeleteAudio.setVisibility(View.VISIBLE);
-        }
-
         currentSelectedIds = new HashSet<>(triggerManager.getSelectedContactIds());
-        btnSaveConfig.setVisibility(View.GONE);
+        if (btnSaveConfig != null) {
+            btnSaveConfig.setVisibility(View.GONE);
+        }
     }
 
     private void setupContactsList() {
-        List<Contact> allContacts = triggerManager.getContacts();
+        List<Contact> allContacts = triggerManager.getSosRecipients();
         sortContacts(allContacts);
         rvSelectContacts.setLayoutManager(new LinearLayoutManager(this));
         rvSelectContacts.setAdapter(new ContactCheckboxAdapter(allContacts));
@@ -248,23 +222,6 @@ public class AlertMessageActivity extends AppCompatActivity {
         });
     }
 
-    private void setupHistoryList() {
-        rvSosHistory.setLayoutManager(new LinearLayoutManager(this));
-        loadHistory();
-    }
-
-    private void loadHistory() {
-        List<SosHistoryEntry> history = triggerManager.getSosHistory();
-        if (history.isEmpty()) {
-            tvEmptyHistory.setVisibility(View.VISIBLE);
-            rvSosHistory.setVisibility(View.GONE);
-        } else {
-            tvEmptyHistory.setVisibility(View.GONE);
-            rvSosHistory.setVisibility(View.VISIBLE);
-            rvSosHistory.setAdapter(new HistoryAdapter(history));
-        }
-    }
-
     private void setupChangeListeners() {
         TextWatcher watcher = new TextWatcher() {
             @Override
@@ -276,149 +233,94 @@ public class AlertMessageActivity extends AppCompatActivity {
         };
         etAlertMessage.addTextChangedListener(watcher);
         etVoiceTrigger.addTextChangedListener(watcher);
-        switchVolumeTrigger.setOnCheckedChangeListener((buttonView, isChecked) -> checkIfChanged());
-        switchShakeTrigger.setOnCheckedChangeListener((buttonView, isChecked) -> checkIfChanged());
     }
 
-    private void toggleRecording() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
-            return;
-        }
-
-        if (!isRecording) {
-            startRecording();
+    private void checkPermissionAndOpenPicker() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            openContactPicker();
         } else {
-            stopRecording();
+            requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS);
         }
     }
 
-    private void startRecording() {
-        recorder = new MediaRecorder();
-        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        recorder.setOutputFile(fileName);
-        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-        try {
-            recorder.prepare();
-        } catch (IOException e) {
-            Log.e(TAG, "prepare() failed");
-        }
-
-        recorder.start();
-        isRecording = true;
-        fabRecord.setImageResource(android.R.drawable.ic_media_pause); // Use system drawable
-        tvAudioStatus.setText("Recording...");
-        startTimer();
+    private void openContactPicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+        contactPickerLauncher.launch(intent);
     }
 
-    private void stopRecording() {
-        if (recorder != null) {
-            recorder.stop();
-            recorder.release();
-            recorder = null;
-        }
-        isRecording = false;
-        fabRecord.setImageResource(android.R.drawable.ic_btn_speak_now); // Use system drawable
-        tvAudioStatus.setText("Recorded");
-        stopTimer();
-        btnPlayAudio.setVisibility(View.VISIBLE);
-        btnDeleteAudio.setVisibility(View.VISIBLE);
-        checkIfChanged();
-    }
+    private void processPickedContact(Uri contactUri) {
+        String[] projection = {
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                ContactsContract.CommonDataKinds.Phone.NUMBER
+        };
 
-    private void togglePlayback() {
-        if (!isPlaying) {
-            startPlaying();
-        } else {
-            stopPlaying();
-        }
-    }
+        try (Cursor cursor = getContentResolver().query(contactUri, projection, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+                int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                
+                String name = cursor.getString(nameIndex);
+                String number = cursor.getString(numberIndex);
 
-    private void startPlaying() {
-        player = new MediaPlayer();
-        try {
-            player.setDataSource(fileName);
-            player.prepare();
-            player.start();
-            isPlaying = true;
-            btnPlayAudio.setImageResource(android.R.drawable.ic_media_pause); // Use system drawable
-            player.setOnCompletionListener(mp -> stopPlaying());
-        } catch (IOException e) {
-            Log.e(TAG, "prepare() failed");
-        }
-    }
-
-    private void stopPlaying() {
-        if (player != null) {
-            player.release();
-            player = null;
-        }
-        isPlaying = false;
-        btnPlayAudio.setImageResource(android.R.drawable.ic_media_play); // Use system drawable
-    }
-
-    private void deleteAudio() {
-        File file = new File(fileName);
-        if (file.exists()) {
-            file.delete();
-        }
-        btnPlayAudio.setVisibility(View.GONE);
-        btnDeleteAudio.setVisibility(View.GONE);
-        tvAudioStatus.setText("No audio message");
-        tvAudioTimer.setText("00:00");
-        checkIfChanged();
-    }
-
-    private void startTimer() {
-        secondsElapsed = 0;
-        timerHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isRecording) {
-                    secondsElapsed++;
-                    tvAudioTimer.setText(formatTime(secondsElapsed));
-                    timerHandler.postDelayed(this, 1000);
+                Contact newContact = new Contact(UUID.randomUUID().toString(), name, number, "SOS Recipient");
+                List<Contact> currentRecipients = triggerManager.getSosRecipients();
+                
+                // Avoid duplicates
+                boolean exists = false;
+                String normalizedNew = TriggerManager.normalizePhone(number);
+                for (Contact c : currentRecipients) {
+                    if (TriggerManager.isSamePhone(c.getPhoneNumber(), number)) {
+                        exists = true;
+                        currentSelectedIds.add(TriggerManager.normalizePhone(c.getPhoneNumber()));
+                        break;
+                    }
                 }
+                
+                if (!exists) {
+                    currentRecipients.add(newContact);
+                    triggerManager.saveSosRecipients(currentRecipients);
+                    currentSelectedIds.add(normalizedNew);
+                    
+                    // Sync to Firestore separate collection for SOS recipients
+                    String userId = triggerManager.getUserId();
+                    if (userId != null && !userId.isEmpty()) {
+                        FirebaseFirestore.getInstance()
+                            .collection("users").document(userId)
+                            .collection("sos_recipients").document(newContact.getId())
+                            .set(newContact, SetOptions.merge());
+                    }
+                }
+                
+                // Auto-save selection when contact is picked/added
+                triggerManager.saveSelectedContactIds(new HashSet<>(currentSelectedIds));
+                
+                setupContactsList();
+                checkIfChanged();
             }
-        }, 1000);
-    }
-
-    private void stopTimer() {
-        timerHandler.removeCallbacksAndMessages(null);
-    }
-
-    private String formatTime(int seconds) {
-        int minutes = seconds / 60;
-        int secs = seconds % 60;
-        return String.format(Locale.getDefault(), "%02d:%02d", minutes, secs);
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to load contact info", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void checkIfChanged() {
-        String currentMsg = etAlertMessage.getText().toString();
-        String currentVoice = etVoiceTrigger.getText().toString();
-        boolean currentVolume = switchVolumeTrigger.isChecked();
-        boolean currentShake = switchShakeTrigger.isChecked();
-        
-        boolean msgChanged = !currentMsg.equals(triggerManager.getEmergencyMessage());
-        boolean voiceChanged = !currentVoice.equals(triggerManager.getVoiceTriggerPhrase());
-        boolean volumeChanged = currentVolume != triggerManager.isVolumeTriggerEnabled();
-        boolean shakeChanged = currentShake != triggerManager.isShakeTriggerEnabled();
-        
-        Set<String> savedIds = new HashSet<>(triggerManager.getSelectedContactIds());
-        boolean contactsChanged = !currentSelectedIds.equals(savedIds);
-        
-        String savedAudio = triggerManager.getAudioMessagePath();
-        boolean audioChanged = false;
-        File audioFile = new File(fileName);
-        if (audioFile.exists()) {
-            audioChanged = savedAudio == null || !savedAudio.equals(fileName);
-        } else {
-            audioChanged = savedAudio != null;
-        }
+        if (triggerManager == null || btnSaveConfig == null) return;
 
-        if (msgChanged || voiceChanged || volumeChanged || shakeChanged || contactsChanged || audioChanged) {
+        // Compare Message
+        String currentMsg = etAlertMessage.getText().toString();
+        String savedMsg = triggerManager.getEmergencyMessage();
+        boolean msgChanged = !currentMsg.equals(savedMsg);
+
+        // Compare Voice Phrase
+        String currentVoice = etVoiceTrigger.getText().toString();
+        String savedVoice = triggerManager.getVoiceTriggerPhrase();
+        boolean voiceChanged = !currentVoice.equals(savedVoice);
+
+        // Compare Selected Contacts
+        Set<String> savedIds = triggerManager.getSelectedContactIds();
+        boolean contactsChanged = !currentSelectedIds.equals(savedIds);
+
+        // Show button if anything is different from saved state
+        if (msgChanged || voiceChanged || contactsChanged) {
             btnSaveConfig.setVisibility(View.VISIBLE);
         } else {
             btnSaveConfig.setVisibility(View.GONE);
@@ -428,16 +330,7 @@ public class AlertMessageActivity extends AppCompatActivity {
     private void saveConfiguration() {
         triggerManager.saveEmergencyMessage(etAlertMessage.getText().toString());
         triggerManager.saveVoiceTriggerPhrase(etVoiceTrigger.getText().toString());
-        triggerManager.setVolumeTriggerEnabled(switchVolumeTrigger.isChecked());
-        triggerManager.setShakeTriggerEnabled(switchShakeTrigger.isChecked());
         triggerManager.saveSelectedContactIds(new HashSet<>(currentSelectedIds));
-        
-        File audioFile = new File(fileName);
-        if (audioFile.exists()) {
-            triggerManager.saveAudioMessagePath(fileName);
-        } else {
-            triggerManager.saveAudioMessagePath(null);
-        }
         
         Toast.makeText(this, "Configuration saved", Toast.LENGTH_SHORT).show();
         btnSaveConfig.setVisibility(View.GONE);
@@ -452,17 +345,23 @@ public class AlertMessageActivity extends AppCompatActivity {
         showLoading("Fetching location...");
         locationHelper.getLastLocation(locationUrl -> {
             String message = etAlertMessage.getText().toString();
-            String fullMessage = message;
-            if (locationUrl != null) {
-                fullMessage += "\n\nMy location: " + locationUrl;
+            String fullMessage;
+            
+            if (message.contains("[URL]")) {
+                fullMessage = message.replace("[URL]", locationUrl != null ? locationUrl : "[Location Unknown]");
+            } else {
+                fullMessage = message;
+                if (locationUrl != null) {
+                    fullMessage += "\n\nMy location: " + locationUrl;
+                }
             }
 
-            List<Contact> allContacts = triggerManager.getContacts();
+            List<Contact> allRecipients = triggerManager.getSosRecipients();
             int sentCount = 0;
             List<String> sentToNames = new ArrayList<>();
             
-            for (Contact contact : allContacts) {
-                if (currentSelectedIds.contains(contact.getId())) {
+            for (Contact contact : allRecipients) {
+                if (currentSelectedIds.contains(TriggerManager.normalizePhone(contact.getPhoneNumber()))) {
                     smsHelper.sendSms(contact.getPhoneNumber(), fullMessage);
                     sentCount++;
                     sentToNames.add(contact.getName());
@@ -482,7 +381,6 @@ public class AlertMessageActivity extends AppCompatActivity {
 
             hideLoading();
             Toast.makeText(this, "Alert sent to " + sentCount + " contacts", Toast.LENGTH_LONG).show();
-            finish();
         });
     }
 
@@ -499,14 +397,31 @@ public class AlertMessageActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull ContactViewHolder holder, int position) {
             Contact contact = contacts.get(position);
+            String normPhone = TriggerManager.normalizePhone(contact.getPhoneNumber());
             holder.tvName.setText(contact.getName());
             holder.tvPhone.setText(contact.getPhoneNumber());
             holder.cbContact.setOnCheckedChangeListener(null);
-            holder.cbContact.setChecked(currentSelectedIds.contains(contact.getId()));
+            holder.cbContact.setChecked(currentSelectedIds.contains(normPhone));
             holder.cbContact.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isChecked) currentSelectedIds.add(contact.getId());
-                else currentSelectedIds.remove(contact.getId());
+                if (isChecked) currentSelectedIds.add(normPhone);
+                else currentSelectedIds.remove(normPhone);
                 checkIfChanged();
+            });
+
+            holder.btnDelete.setOnClickListener(v -> {
+                // Remove from local selection
+                currentSelectedIds.remove(normPhone);
+                
+                // Remove from Firestore
+                if (userId != null) {
+                    FirebaseFirestore.getInstance()
+                            .collection("users").document(userId)
+                            .collection("sos_recipients").document(contact.getId())
+                            .delete();
+                }
+                
+                // TriggerManager update will happen via the snapshot listener
+                Toast.makeText(AlertMessageActivity.this, "Contact removed from SOS recipients", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -516,43 +431,13 @@ public class AlertMessageActivity extends AppCompatActivity {
         class ContactViewHolder extends RecyclerView.ViewHolder {
             CheckBox cbContact;
             TextView tvName, tvPhone;
+            View btnDelete;
             ContactViewHolder(View itemView) {
                 super(itemView);
                 cbContact = itemView.findViewById(R.id.cbContact);
                 tvName = itemView.findViewById(R.id.tvContactName);
                 tvPhone = itemView.findViewById(R.id.tvContactPhone);
-            }
-        }
-    }
-
-    private static class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
-        private final List<SosHistoryEntry> history;
-        HistoryAdapter(List<SosHistoryEntry> history) { this.history = history; }
-
-        @NonNull @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sos_history, parent, false);
-            return new ViewHolder(v);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            SosHistoryEntry entry = history.get(position);
-            holder.tvType.setText(entry.getTriggerType());
-            holder.tvTime.setText(new SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault()).format(new Date(entry.getTimestamp())));
-            holder.tvContacts.setText("Sent to: " + String.join(", ", entry.getContactNames()));
-        }
-
-        @Override
-        public int getItemCount() { return history.size(); }
-
-        static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView tvType, tvTime, tvContacts;
-            ViewHolder(View v) {
-                super(v);
-                tvType = v.findViewById(R.id.tvHistoryType);
-                tvTime = v.findViewById(R.id.tvHistoryTime);
-                tvContacts = v.findViewById(R.id.tvHistoryContacts);
+                btnDelete = itemView.findViewById(R.id.btnDeleteContact);
             }
         }
     }

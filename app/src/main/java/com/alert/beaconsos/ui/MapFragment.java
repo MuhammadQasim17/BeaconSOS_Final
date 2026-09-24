@@ -1,16 +1,19 @@
 package com.alert.beaconsos.ui;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -21,21 +24,39 @@ import com.alert.beaconsos.data.TriggerManager;
 import com.alert.beaconsos.utils.LoadingUtils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
-    private GoogleMap mMap;
+public class MapFragment extends Fragment {
+
+    private MapView map = null;
+    private MyLocationNewOverlay mLocationOverlay;
     private FusedLocationProviderClient fusedLocationClient;
     private TriggerManager triggerManager;
     private View customLoading;
     private TextView tvLoadingText;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    initMapLocation();
+                }
+            });
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Important: Set the user agent to avoid getting banned from OSM servers
+        Context ctx = requireActivity().getApplicationContext();
+        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+        Configuration.getInstance().setUserAgentValue(requireActivity().getPackageName());
+    }
 
     @Nullable
     @Override
@@ -48,26 +69,88 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         customLoading = view.findViewById(R.id.customLoading);
         tvLoadingText = view.findViewById(R.id.tvLoadingText);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
-                .findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            showLoading("Initializing Map...");
-            mapFragment.getMapAsync(this);
-        }
+        map = view.findViewById(R.id.map);
+        map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setMultiTouchControls(true);
+        map.getController().setZoom(15.0);
+
+        initMapLocation();
 
         return view;
     }
 
-    @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
-        mMap = googleMap;
-        hideLoading();
-        
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-        mMap.getUiSettings().setCompassEnabled(true);
+    private void initMapLocation() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            
+            // Setup OSM Location Overlay
+            if (mLocationOverlay == null) {
+                mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(requireContext()), map);
+                mLocationOverlay.enableMyLocation();
+                mLocationOverlay.enableFollowLocation();
+                map.getOverlays().add(mLocationOverlay);
+            }
 
-        updateLocationUI();
-        getDeviceLocation();
+            showLoading("Locating Device...");
+            
+            // Strategy: Try last location first, then wait for fix, and set a safety timeout
+            fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        hideLoading();
+                        GeoPoint startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                        map.getController().animateTo(startPoint);
+                        map.getController().setZoom(17.0);
+                        addLocationMarker(startPoint);
+                    } else {
+                        // If no cached location, wait for the overlay to get a fix
+                        waitForFix();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    waitForFix();
+                });
+
+            // Safety timeout: hide loading after 8 seconds anyway to let user interact with map
+            map.postDelayed(() -> {
+                if (isAdded()) hideLoading();
+            }, 8000);
+
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+    }
+
+    private void waitForFix() {
+        mLocationOverlay.runOnFirstFix(() -> {
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    hideLoading();
+                    GeoPoint myLocation = mLocationOverlay.getMyLocation();
+                    if (myLocation != null) {
+                        map.getController().animateTo(myLocation);
+                        addLocationMarker(myLocation);
+                    }
+                });
+            }
+        });
+    }
+
+    private void addLocationMarker(GeoPoint point) {
+        // Remove existing markers
+        for (int i = 0; i < map.getOverlays().size(); i++) {
+            if (map.getOverlays().get(i) instanceof Marker) {
+                map.getOverlays().remove(i);
+                i--;
+            }
+        }
+        
+        Marker startMarker = new Marker(map);
+        startMarker.setPosition(point);
+        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+        startMarker.setTitle("You are here");
+        startMarker.setIcon(ContextCompat.getDrawable(requireContext(), org.osmdroid.library.R.drawable.marker_default));
+        map.getOverlays().add(startMarker);
+        map.invalidate();
     }
 
     private void showLoading(String message) {
@@ -85,63 +168,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
-    private void updateLocationUI() {
-        if (mMap == null) return;
-
-        boolean systemGranted = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-        boolean appEnabled = triggerManager.isLocationPermissionEnabled();
-
-        try {
-            if (systemGranted && appEnabled) {
-                mMap.setMyLocationEnabled(true);
-                mMap.getUiSettings().setMyLocationButtonEnabled(true);
-            } else {
-                mMap.setMyLocationEnabled(false);
-                mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                if (!appEnabled && systemGranted) {
-                    Toast.makeText(getContext(), "Location map view is disabled in App Permissions", Toast.LENGTH_SHORT).show();
-                }
-            }
-        } catch (SecurityException e) {
-            Log.e("MapFragment", "Exception: " + e.getMessage());
-        }
-    }
-
-    private void getDeviceLocation() {
-        try {
-            boolean systemGranted = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-            boolean appEnabled = triggerManager.isLocationPermissionEnabled();
-
-            if (systemGranted && appEnabled) {
-                showLoading("Locating Device...");
-                fusedLocationClient.getLastLocation()
-                        .addOnSuccessListener(requireActivity(), location -> {
-                            hideLoading();
-                            if (location != null) {
-                                LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f));
-                                mMap.addMarker(new MarkerOptions()
-                                        .position(currentLatLng)
-                                        .title("You are here"));
-                            }
-                        })
-                        .addOnFailureListener(e -> hideLoading());
-            } else if (!systemGranted) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-            }
-        } catch (SecurityException e) {
-            Log.e("MapFragment", "Exception: " + e.getMessage());
-            hideLoading();
-        }
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (map != null) map.onResume();
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                updateLocationUI();
-                getDeviceLocation();
-            }
-        }
+    public void onPause() {
+        super.onPause();
+        if (map != null) map.onPause();
     }
 }

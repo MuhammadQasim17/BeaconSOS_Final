@@ -131,7 +131,7 @@
             <FrameLayout
                 android:layout_width="220dp"
                 android:layout_height="220dp"
-                android:layout_marginTop="40dp">
+                android:layout_marginTop="20dp">
 
                 <View
                     android:layout_width="220dp"
@@ -159,68 +159,118 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <!-- Bottom Row for Icon-Only Buttons -->
+            <!-- Bottom Row for Icon-Only Buttons with Labels -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="40dp"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:weightSum="4">
+                android:gravity="top"
+                android:baselineAligned="false"
+                android:weightSum="3">
 
-                <!-- Left Button: Emergency Helpline (Wider Pill) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCallEmergency"
+                <!-- Left Button: Emergency Services -->
+                <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="64dp"
-                    android:layout_weight="2"
-                    android:layout_marginEnd="6dp"
-                    android:padding="0dp"
-                    app:cornerRadius="32dp"
-                    android:backgroundTint="#33FFFFFF"
-                    app:elevation="0dp"
-                    app:icon="@drawable/emergency_helpline"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="32dp"
-                    app:iconTint="@color/white"
-                    app:rippleColor="#20FFFFFF" />
-
-                <!-- Center Button: Alert Message (Message Button) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAlertMessage"
-                    android:layout_width="0dp"
-                    android:layout_height="64dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginHorizontal="6dp"
-                    android:padding="0dp"
-                    app:cornerRadius="32dp"
-                    android:backgroundTint="#33FFFFFF"
-                    app:elevation="0dp"
-                    app:icon="@drawable/alert_message"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="28dp"
-                    app:iconTint="@color/white"
-                    app:rippleColor="#20FFFFFF" />
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCallEmergency"
+                        android:layout_width="80dp"
+                        android:layout_height="64dp"
+                        android:padding="0dp"
+                        app:cornerRadius="32dp"
+                        android:backgroundTint="#33FFFFFF"
+                        app:elevation="0dp"
+                        app:icon="@drawable/emergency_services_new"
+                        app:iconGravity="textStart"
+                        app:iconPadding="0dp"
+                        app:iconSize="40dp"
+                        app:iconTint="@null"
+                        app:rippleColor="#20FFFFFF" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Helpline"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:alpha="0.9" />
+                </LinearLayout>
+
+                <!-- Center Button: SOS Messages -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAlertMessage"
+                        android:layout_width="80dp"
+                        android:layout_height="64dp"
+                        android:padding="0dp"
+                        app:cornerRadius="32dp"
+                        android:backgroundTint="#33FFFFFF"
+                        app:elevation="0dp"
+                        app:icon="@drawable/sos_messages_new"
+                        app:iconGravity="textStart"
+                        app:iconPadding="0dp"
+                        app:iconSize="40dp"
+                        app:iconTint="@null"
+                        app:rippleColor="#20FFFFFF" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="SOS Message"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:alpha="0.9" />
+                </LinearLayout>
 
                 <!-- Right Button: Trusted Contacts -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnTrustedContacts"
+                <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="64dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    android:padding="0dp"
-                    app:cornerRadius="32dp"
-                    android:backgroundTint="#33FFFFFF"
-                    app:elevation="0dp"
-                    app:icon="@drawable/trusted_contacts"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="28dp"
-                    app:iconTint="@color/white"
-                    app:rippleColor="#20FFFFFF" />
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTrustedContacts"
+                        android:layout_width="80dp"
+                        android:layout_height="64dp"
+                        android:padding="0dp"
+                        app:cornerRadius="32dp"
+                        android:backgroundTint="#33FFFFFF"
+                        app:elevation="0dp"
+                        app:icon="@drawable/trusted_contacts_new_img"
+                        app:iconGravity="textStart"
+                        app:iconPadding="0dp"
+                        app:iconSize="40dp"
+                        app:iconTint="@null"
+                        app:rippleColor="#20FFFFFF" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Contacts"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:alpha="0.9" />
+                </LinearLayout>
 
             </LinearLayout>
 

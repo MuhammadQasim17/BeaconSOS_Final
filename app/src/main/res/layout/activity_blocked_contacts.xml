@@ -10,10 +10,11 @@
         android:id="@+id/toolbarBlocked"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_marginTop="16dp"
         android:background="@android:color/transparent"
         app:title="Blocked Contacts"
         app:titleTextColor="@color/white"
-        app:navigationIconTint="@color/white"
+        app:navigationIcon="@drawable/ic_back_custom"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView

@@ -10,66 +10,20 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_marginTop="16dp"
         android:background="@android:color/transparent"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="Alert Message"
+        app:title="SOS Configuration"
         app:titleTextColor="@color/white"
-        app:navigationIconTint="@color/white" />
-
-    <!-- Enhanced Tab Navigation Container -->
-    <LinearLayout
-        android:id="@+id/layout_top_tabs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="4dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/tab_container_bg"
-        app:layout_constraintTop_toBottomOf="@id/toolbar">
-
-        <Button
-            android:id="@+id/btnTabConfig"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:text="SOS Configuration"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white"
-            android:textColor="#1E88E5"
-            app:cornerRadius="26dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
-
-        <Button
-            android:id="@+id/btnTabHistory"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:text="SOS History"
-            android:textAllCaps="false"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:backgroundTint="@android:color/transparent"
-            android:textColor="@color/white"
-            app:cornerRadius="26dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            style="@style/Widget.MaterialComponents.Button.UnelevatedButton" />
-    </LinearLayout>
+        app:navigationIcon="@drawable/ic_back_custom" />
 
     <!-- Configuration View -->
     <ScrollView
         android:id="@+id/viewConfig"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/layout_bottom_btns"
-        app:layout_constraintTop_toBottomOf="@id/layout_top_tabs">
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -116,110 +70,6 @@
                         android:gravity="top"
                         android:textSize="14sp" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Volume Button Trigger Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#33FFFFFF"
-                app:strokeColor="#4DFFFFFF"
-                app:strokeWidth="1dp"
-                android:layout_marginBottom="16dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_alignParentStart="true"
-                        android:layout_toStartOf="@id/switchVolumeTrigger"
-                        android:layout_centerVertical="true">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/volume_sos_title"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/volume_sos_desc"
-                            android:textColor="@color/white"
-                            android:alpha="0.7"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switchVolumeTrigger"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        app:thumbTint="@color/white"
-                        app:trackTint="#80FFFFFF" />
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Shake Trigger Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#33FFFFFF"
-                app:strokeColor="#4DFFFFFF"
-                app:strokeWidth="1dp"
-                android:layout_marginBottom="16dp">
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_alignParentStart="true"
-                        android:layout_toStartOf="@id/switchShakeTrigger"
-                        android:layout_centerVertical="true">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Shake Detection"
-                            android:textColor="@color/white"
-                            android:textStyle="bold"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Shake your phone to trigger SOS"
-                            android:textColor="@color/white"
-                            android:alpha="0.7"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/switchShakeTrigger"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        app:thumbTint="@color/white"
-                        app:trackTint="#80FFFFFF" />
-                </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Voice Card -->
@@ -271,15 +121,15 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Audio Message Section -->
+            <!-- Contacts Card (Made Prominent) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#33FFFFFF"
-                app:strokeColor="#4DFFFFFF"
-                app:strokeWidth="1dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#66FFFFFF"
+                app:strokeColor="@color/white"
+                app:strokeWidth="2dp"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
@@ -287,158 +137,56 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="20dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Audio SOS Clip"
-                        android:textColor="@color/white"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="12dp" />
 
                     <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="80dp"
-                        android:background="@drawable/input_bg"
-                        android:padding="8dp">
-
-                        <com.google.android.material.floatingactionbutton.FloatingActionButton
-                            android:id="@+id/fabRecord"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            app:fabCustomSize="56dp"
-                            app:srcCompat="@drawable/mic"
-                            app:backgroundTint="@color/error_red"
-                            app:tint="@color/white"
-                            app:elevation="0dp" />
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_centerVertical="true"
-                            android:layout_toEndOf="@id/fabRecord"
-                            android:layout_marginStart="16dp">
-
-                            <TextView
-                                android:id="@+id/tvAudioStatus"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="No audio recorded"
-                                android:textColor="@color/white"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tvAudioTimer"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="00:00"
-                                android:textColor="#FFEB3B"
-                                android:textSize="12sp"
-                                android:visibility="gone" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true">
-
-                            <ImageButton
-                                android:id="@+id/btnPlayAudio"
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:src="@android:drawable/ic_media_play"
-                                android:visibility="gone"
-                                app:tint="@color/white" />
-
-                            <ImageButton
-                                android:id="@+id/btnDeleteAudio"
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:src="@drawable/trash"
-                                android:visibility="gone"
-                                app:tint="#FFCDD2" />
-                        </LinearLayout>
-                    </RelativeLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Contacts Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#33FFFFFF"
-                app:strokeColor="#4DFFFFFF"
-                app:strokeWidth="1dp"
-                android:layout_marginBottom="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Select SOS Recipients"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Select SOS Recipients"
+                            android:textColor="@color/white"
+                            android:textStyle="bold"
+                            android:textSize="18sp"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true" />
+
+                        <TextView
+                            android:id="@+id/tvClearAllRecipients"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="CLEAR ALL"
+                            android:textColor="#FFEB3B"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:padding="8dp"
+                            android:background="?attr/selectableItemBackground" />
+                    </RelativeLayout>
+
+                    <Button
+                        android:id="@+id/btnSelectFromContactsAlert"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:text="SELECT FROM CONTACTS"
                         android:textColor="@color/white"
-                        android:textStyle="bold"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="12dp" />
+                        app:strokeColor="@color/white"
+                        app:cornerRadius="25dp"
+                        android:layout_marginBottom="16dp" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvSelectContacts"
                         android:layout_width="match_parent"
-                        android:layout_height="200dp" />
+                        android:layout_height="220dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </ScrollView>
-
-    <!-- History View -->
-    <LinearLayout
-        android:id="@+id/viewHistory"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layout_top_tabs">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Emergency Log"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:layout_marginBottom="16dp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvSosHistory"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <TextView
-            android:id="@+id/tvEmptyHistory"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="No SOS alerts sent yet."
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:visibility="gone" />
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layout_bottom_btns"

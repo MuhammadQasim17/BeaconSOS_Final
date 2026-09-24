@@ -34,9 +34,8 @@
 
     <application
         android:name=".BeaconApplication"
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
         android:icon="@mipmap/ic_app_logo"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_app_logo_round"
@@ -55,10 +54,11 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Google Maps API Key -->
+        <!-- Google Maps API Key
+             NOTE: In Google Cloud Console, restrict this key by Android Package Name (com.alert.beaconsos) and SHA-1 fingerprint. -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_GOOGLE_MAPS_API_KEY_HERE" />
+            android:value="${MAPS_API_KEY}" />
 
         <activity
             android:name=".ui.LoginActivity"
@@ -120,24 +120,9 @@
             android:windowSoftInputMode="adjustPan" />
 
         <activity
-            android:name=".ui.GroupChatActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
             android:name=".ui.PermissionsActivity"
             android:exported="false"
             android:label="App Permissions" />
-
-        <activity
-            android:name=".ui.GroupSettingsActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustPan" />
-
-        <activity
-            android:name=".ui.AddMemberActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustPan" />
 
         <activity
             android:name=".ui.EmergencyNumbersActivity"
@@ -145,18 +130,14 @@
             android:label="Emergency Services" />
 
         <activity
-            android:name=".ui.NewIndividualChatActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustPan" />
-
-        <activity
-            android:name=".ui.PrivateChatSettingsActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustPan" />
-
-        <activity
             android:name=".ui.ImagePreviewActivity"
             android:exported="false" />
+
+        <!-- Image Cropper Activity -->
+        <activity
+            android:name="com.canhub.cropper.CropImageActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MaterialComponents.DayNight"/>
 
         <service
             android:name=".services.BeaconService"

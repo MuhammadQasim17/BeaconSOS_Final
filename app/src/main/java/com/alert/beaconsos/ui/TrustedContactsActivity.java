@@ -153,6 +153,8 @@ public class TrustedContactsActivity extends BaseActivity {
                 hideLoading();
                 if (error != null) {
                     Log.e(TAG, "Listen failed.", error);
+                    Toast.makeText(this, "Failed to load contacts: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    updateList(new ArrayList<>());
                     return;
                 }
 
@@ -216,8 +218,16 @@ public class TrustedContactsActivity extends BaseActivity {
     }
 
     private void updateList(List<Contact> contacts) {
-        ContactsAdapter adapter = new ContactsAdapter(contacts);
-        rvContacts.setAdapter(adapter);
+        View emptyState = findViewById(R.id.layoutEmptyState);
+        if (contacts == null || contacts.isEmpty()) {
+            if (emptyState != null) emptyState.setVisibility(View.VISIBLE);
+            rvContacts.setVisibility(View.GONE);
+        } else {
+            if (emptyState != null) emptyState.setVisibility(View.GONE);
+            rvContacts.setVisibility(View.VISIBLE);
+            ContactsAdapter adapter = new ContactsAdapter(contacts);
+            rvContacts.setAdapter(adapter);
+        }
     }
 
     private void showCallConfirmationDialog(String name, String number) {

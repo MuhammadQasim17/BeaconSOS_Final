@@ -6,19 +6,18 @@ public class User {
     private String email;
     private String phone;
     private String role;
-    private String password; // Added password field for login check
     private String profileImageUri;
+    private boolean online;
 
     // Required empty constructor for Firebase
     public User() {}
 
-    public User(String id, String name, String email, String phone, String role, String password) {
+    public User(String id, String name, String email, String phone, String role) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.phone = phone;
         this.role = role;
-        this.password = password;
     }
 
     public String getId() { return id; }
@@ -36,9 +35,9 @@ public class User {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
     public String getProfileImageUri() { return profileImageUri; }
     public void setProfileImageUri(String profileImageUri) { this.profileImageUri = profileImageUri; }
+
+    public boolean isOnline() { return online; }
+    public void setOnline(boolean online) { this.online = online; }
 }

@@ -9,12 +9,12 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_marginTop="16dp"
         android:background="@android:color/transparent"
         app:layout_constraintTop_toTopOf="parent"
         app:title="Edit Profile"
         app:titleTextColor="@color/white"
-        app:navigationIcon="?attr/homeAsUpIndicator"
-        app:navigationIconTint="@color/white" />
+        app:navigationIcon="@drawable/ic_back_custom" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -30,34 +30,46 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- Profile Picture Section -->
+            <!-- Profile Picture Section with Frame -->
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp">
 
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/ivEditProfilePic"
-                    android:layout_width="140dp"
-                    android:layout_height="140dp"
-                    android:padding="2dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/profile_pic"
-                    app:shapeAppearanceOverlay="@style/CircleImage"
-                    app:strokeColor="@color/white"
-                    app:strokeWidth="3dp" />
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/profileFrame"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    app:cardCornerRadius="75dp"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeWidth="0dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/ivEditProfilePic"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="3dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_profile_new"
+                        app:shapeAppearanceOverlay="@style/CircleImage" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/btnChangePhoto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@id/ivEditProfilePic"
-                    android:layout_alignEnd="@id/ivEditProfilePic"
-                    android:layout_margin="4dp"
-                    app:fabCustomSize="40dp"
+                    android:layout_alignBottom="@id/profileFrame"
+                    android:layout_alignEnd="@id/profileFrame"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="4dp"
+                    app:fabCustomSize="44dp"
+                    app:elevation="12dp"
+                    app:pressedTranslationZ="16dp"
                     app:srcCompat="@android:drawable/ic_menu_camera"
                     app:tint="@color/primary_blue"
-                    android:backgroundTint="@color/white" />
+                    app:backgroundTint="@color/white"
+                    app:borderWidth="0dp" />
             </RelativeLayout>
 
             <TextView
@@ -109,58 +121,6 @@
                             android:textColorHint="#CCFFFFFF"
                             android:inputType="textPersonName" />
                     </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="#33FFFFFF"
-                        app:strokeColor="@color/white"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:padding="4dp">
-
-                            <com.hbb20.CountryCodePicker
-                                android:id="@+id/ccpEditProfile"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                app:ccp_showFullName="false"
-                                app:ccp_showPhoneCode="true"
-                                app:ccp_defaultNameCode="US"
-                                app:ccp_textSize="14sp"
-                                app:ccp_contentColor="@color/white" />
-
-                            <EditText
-                                android:id="@+id/etEditPhone"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:background="@android:color/transparent"
-                                android:hint="Phone Number"
-                                android:textSize="14sp"
-                                android:textColor="@color/white"
-                                android:textColorHint="#CCFFFFFF"
-                                android:inputType="phone"
-                                android:padding="12dp" />
-
-                            <Button
-                                android:id="@+id/btnVerifyPhone"
-                                style="@style/Widget.MaterialComponents.Button.TextButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="VERIFY"
-                                android:textSize="12sp"
-                                android:textColor="@color/white"
-                                android:visibility="gone" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

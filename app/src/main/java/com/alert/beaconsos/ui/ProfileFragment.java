@@ -1,6 +1,7 @@
 package com.alert.beaconsos.ui;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,12 +15,19 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.TriggerManager;
+import com.alert.beaconsos.data.User;
 import com.bumptech.glide.Glide;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class ProfileFragment extends Fragment {
 
@@ -58,7 +66,7 @@ public class ProfileFragment extends Fragment {
         optionSettings.setOnClickListener(v -> startActivity(new Intent(requireContext(), SettingsActivity.class)));
         
         optionFeedback.setOnClickListener(v -> {
-            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "support@beaconsos.com", null));
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "muhammadqasim891011@gmail.com", null));
             emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Beacon SOS Feedback");
             try {
                 startActivity(Intent.createChooser(emailIntent, "Send feedback..."));
@@ -67,15 +75,28 @@ public class ProfileFragment extends Fragment {
             }
         });
         
-        optionAbout.setOnClickListener(v -> Toast.makeText(requireContext(), "Beacon SOS v1.0.0\nYour Safety, Our Priority.", Toast.LENGTH_LONG).show());
+        optionAbout.setOnClickListener(v -> {
+            View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_about, null);
+            androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext(), R.style.GlassyDialog)
+                .setView(dialogView)
+                .create();
+            
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
+
+            dialogView.findViewById(R.id.btnAboutClose).setOnClickListener(view1 -> dialog.dismiss());
+
+            dialog.show();
+        });
 
         btnLogout.setOnClickListener(v -> {
-            mAuth.signOut();
-            triggerManager.clearData();
-            Intent intent = new Intent(requireContext(), LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            requireActivity().finish();
+            if (getActivity() instanceof BaseActivity) {
+                ((BaseActivity) getActivity()).showGlassyConfirmDialog("Logout", "Are you sure you want to logout?", "Logout", this::performLogout);
+            } else {
+                // Fallback if activity is not BaseActivity
+                performLogout();
+            }
         });
 
         loadUserData();
@@ -83,24 +104,85 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+    private void performLogout() {
+        mAuth.signOut();
+        triggerManager.clearData();
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        requireActivity().finish();
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+        syncUserDataFromFirebase();
         loadUserData();
     }
 
+    private void syncUserDataFromFirebase() {
+        String uid = mAuth.getUid();
+        if (uid == null) return;
+
+        FirebaseDatabase.getInstance().getReference("users").child(uid)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            User user = snapshot.getValue(User.class);
+                            if (user != null) {
+                                triggerManager.saveUserName(user.getName());
+                                triggerManager.saveUserPhone(user.getPhone());
+                                triggerManager.saveProfileImageUri(user.getProfileImageUri());
+                                loadUserData(); // Refresh UI
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
+    }
+
     private void loadUserData() {
+        String firebaseEmail = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getEmail() : null;
+        String phoneToShow = triggerManager.getUserPhone();
+
+        // Failsafe: If logged in via our virtual email system, derive the phone from the auth email
+        if (firebaseEmail != null && firebaseEmail.endsWith("@beaconsos.app")) {
+            String derivedPhone = "+" + firebaseEmail.replace("@beaconsos.app", "");
+            if (!derivedPhone.equals(phoneToShow)) {
+                phoneToShow = derivedPhone;
+                triggerManager.saveUserPhone(derivedPhone);
+                // Sync the correction back to DB
+                String uid = mAuth.getUid();
+                if (uid != null) {
+                    FirebaseDatabase.getInstance().getReference("users").child(uid).child("phone").setValue(derivedPhone);
+                }
+            }
+        }
+
         if (tvName != null) tvName.setText(triggerManager.getUserName());
-        if (tvPhone != null) tvPhone.setText(triggerManager.getUserPhone());
+        if (tvPhone != null) tvPhone.setText(phoneToShow);
 
         String imageUriString = triggerManager.getProfileImageUri();
         if (ivProfilePic != null) {
-            Glide.with(this)
-                    .load(imageUriString != null && !imageUriString.isEmpty() ? Uri.parse(imageUriString) : null)
-                    .placeholder(R.drawable.profile_pic)
-                    .error(R.drawable.profile_pic)
-                    .circleCrop()
-                    .into(ivProfilePic);
+            if (imageUriString != null && !imageUriString.isEmpty()) {
+                Glide.with(this)
+                        .load(imageUriString)
+                        .placeholder(R.drawable.ic_user_fallback)
+                        .error(R.drawable.ic_user_fallback)
+                        .centerCrop()
+                        .override(512, 512) // High resolution for large display
+                        .into(ivProfilePic);
+                ivProfilePic.setImageTintList(null);
+            } else {
+                // Use the new gray user icon for fallback
+                ivProfilePic.setImageResource(R.drawable.ic_user_fallback);
+                ivProfilePic.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                // Apply gray tint as requested
+                ivProfilePic.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_secondary)));
+            }
         }
     }
 }

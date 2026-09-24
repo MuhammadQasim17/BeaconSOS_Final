@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Base Gradient (Red to Purple to Blue) -->
+    <!-- Base Gradient -->
     <item>
         <shape android:shape="rectangle">
             <gradient
                 android:angle="135"
-                android:startColor="#FF416C"
-                android:centerColor="#6A11CB"
-                android:endColor="#2575FC"
+                android:startColor="@color/grad_start"
+                android:centerColor="@color/grad_center"
+                android:endColor="@color/grad_end"
                 android:type="linear" />
         </shape>
     </item>
 
-    <!-- Second layer to add Orange and Teal highlights -->
+    <!-- Second layer to add highlights -->
     <item>
         <shape android:shape="rectangle">
             <gradient
                 android:angle="315"
-                android:startColor="#60FF4B2B"
-                android:centerColor="#00000000"
-                android:endColor="#6000FF88"
+                android:startColor="@color/grad_highlight_1"
+                android:centerColor="@android:color/transparent"
+                android:endColor="@color/grad_highlight_2"
                 android:type="linear" />
         </shape>
     </item>

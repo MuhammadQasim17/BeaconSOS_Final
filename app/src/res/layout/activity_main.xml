@@ -31,21 +31,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/ivToolbarProfile"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true"
-                        android:scaleType="centerCrop"
-                        android:src="@android:drawable/ic_menu_myplaces"
-                        app:shapeAppearanceOverlay="@style/CircleImage"
-                        app:strokeColor="@color/black"
-                        app:strokeWidth="1dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless"/>
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

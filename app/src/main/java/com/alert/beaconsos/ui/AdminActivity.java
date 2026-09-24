@@ -19,11 +19,13 @@ import com.alert.beaconsos.data.TriggerManager;
 import com.alert.beaconsos.data.User;
 import com.alert.beaconsos.utils.LoadingUtils;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,10 +45,67 @@ public class AdminActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            redirectToLogin();
+            return;
+        }
+
+        // Verify user role directly from Firebase BEFORE calling setContentView or initializing Admin UI
+        verifyAdminRoleAndInit(currentUser.getUid());
+    }
+
+    private void verifyAdminRoleAndInit(String uid) {
+        DatabaseReference roleRef = FirebaseDatabase.getInstance().getReference("users").child(uid).child("role");
+        roleRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String role = snapshot.getValue(String.class);
+                if (role != null) {
+                    checkRoleAndProceed(role);
+                } else {
+                    // Fallback check against Firestore
+                    FirebaseFirestore.getInstance().collection("users").document(uid).get()
+                            .addOnSuccessListener(doc -> {
+                                String fsRole = doc.getString("role");
+                                checkRoleAndProceed(fsRole);
+                            })
+                            .addOnFailureListener(e -> denyAccess());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                denyAccess();
+            }
+        });
+    }
+
+    private void checkRoleAndProceed(String role) {
+        if (role != null && role.equalsIgnoreCase("admin")) {
+            initAdminUi();
+        } else {
+            denyAccess();
+        }
+    }
+
+    private void denyAccess() {
+        Toast.makeText(this, "Access Denied: Admin privileges required.", Toast.LENGTH_LONG).show();
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
+    }
+
+    private void redirectToLogin() {
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
+    }
+
+    private void initAdminUi() {
         setContentView(R.layout.activity_admin);
 
         triggerManager = new TriggerManager(this);
-        mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
         rvUsers = findViewById(R.id.rvUsers);
@@ -64,8 +123,7 @@ public class AdminActivity extends BaseActivity {
         btnLogoutAdmin.setOnClickListener(v -> {
             mAuth.signOut();
             triggerManager.clearData();
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
+            redirectToLogin();
         });
     }
 

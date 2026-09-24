@@ -3,6 +3,7 @@ package com.alert.beaconsos.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Build;
@@ -11,11 +12,13 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
-import android.widget.ImageView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -23,7 +26,6 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.TriggerManager;
 import com.alert.beaconsos.services.BeaconService;
-import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -34,11 +36,10 @@ public class MainActivity extends BaseActivity {
     private TriggerManager triggerManager;
     private BottomNavigationView bottomNavigationView;
     private ViewPager2 viewPager;
-    private View navSelectionIndicator;
-    private ImageView ivToolbarProfile;
     private View onlineStatusDot;
     private boolean isNavigatingProgrammatically = false;
     private DatabaseReference userPresenceRef;
+    private ConnectivityManager.NetworkCallback networkCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,17 +62,22 @@ public class MainActivity extends BaseActivity {
         }
 
         viewPager = findViewById(R.id.viewPager);
+        viewPager.setUserInputEnabled(false); // Disable swipe to prevent interference with Map zoom/pan
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-        navSelectionIndicator = findViewById(R.id.nav_selection_indicator);
-        ivToolbarProfile = findViewById(R.id.ivToolbarProfile);
         onlineStatusDot = findViewById(R.id.onlineStatusDot);
+
+        // Handle Window Insets for both 3-button and gesture navigation
+        int basePaddingBottom = bottomNavigationView.getPaddingBottom();
+        ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView, (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), basePaddingBottom + systemBars.bottom);
+            return insets;
+        });
 
         setupViewPager();
 
-        ivToolbarProfile.setOnClickListener(v -> bottomNavigationView.setSelectedItemId(R.id.nav_profile));
-
-        updateProfileData();
         updateOnlineStatus();
+        setupNetworkCallback();
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int position = getPositionFromItemId(item.getItemId());
@@ -79,8 +85,6 @@ public class MainActivity extends BaseActivity {
                 isNavigatingProgrammatically = true;
                 // Jump to the new page without slide animation
                 viewPager.setCurrentItem(position, false);
-                // Manually animate the indicator to the new position
-                animateIndicatorToPosition(position);
             }
             animateNavIconPulse(item.getItemId());
             return true;
@@ -89,10 +93,7 @@ public class MainActivity extends BaseActivity {
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                // Only update position via scroll callback if it's a user swipe
-                if (!isNavigatingProgrammatically) {
-                    updateIndicatorPosition(position, positionOffset);
-                }
+                // Indicator removed
             }
 
             @Override
@@ -126,9 +127,9 @@ public class MainActivity extends BaseActivity {
         });
 
         // Initialize presence tracking
-        String phone = triggerManager.getUserPhone();
-        if (!phone.isEmpty()) {
-            userPresenceRef = FirebaseDatabase.getInstance().getReference("users").child(phone).child("online");
+        String userId = triggerManager.getUserId();
+        if (userId != null && !userId.isEmpty()) {
+            userPresenceRef = FirebaseDatabase.getInstance().getReference("users").child(userId).child("online");
             userPresenceRef.setValue(true);
             userPresenceRef.onDisconnect().setValue(false);
         }
@@ -140,6 +141,8 @@ public class MainActivity extends BaseActivity {
         if (userPresenceRef != null) {
             userPresenceRef.setValue(true);
         }
+        updateOnlineStatus();
+        updateBottomNavProfileIcon(bottomNavigationView);
     }
 
     @Override
@@ -149,38 +152,36 @@ public class MainActivity extends BaseActivity {
         // but onDisconnect handles actual app close/crash.
     }
 
-    private void updateIndicatorPosition(int position, float positionOffset) {
-        if (navSelectionIndicator == null || bottomNavigationView == null) return;
-        
-        float navWidth = bottomNavigationView.getWidth();
-        if (navWidth == 0) return;
-
-        float itemWidth = navWidth / 4f;
-        float translationX = (position + positionOffset) * itemWidth;
-        
-        navSelectionIndicator.setTranslationX(translationX);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (networkCallback != null) {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm != null) cm.unregisterNetworkCallback(networkCallback);
+        }
     }
 
-    private void animateIndicatorToPosition(int position) {
-        if (navSelectionIndicator == null || bottomNavigationView == null) return;
+    private void setupNetworkCallback() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            networkCallback = new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(@NonNull android.net.Network network) {
+                    runOnUiThread(() -> updateOnlineStatus());
+                }
 
-        float navWidth = bottomNavigationView.getWidth();
-        if (navWidth == 0) return;
-
-        float itemWidth = navWidth / 4f;
-        float targetX = position * itemWidth;
-
-        navSelectionIndicator.animate()
-                .translationX(targetX)
-                .setDuration(300)
-                .setInterpolator(new AccelerateDecelerateInterpolator())
-                .withEndAction(() -> isNavigatingProgrammatically = false)
-                .start();
+                @Override
+                public void onLost(@NonNull android.net.Network network) {
+                    runOnUiThread(() -> updateOnlineStatus());
+                }
+            };
+            cm.registerDefaultNetworkCallback(networkCallback);
+        }
     }
 
     private void setupViewPager() {
         // Use setOffscreenPageLimit to keep fragments in memory
-        viewPager.setOffscreenPageLimit(3);
+        viewPager.setOffscreenPageLimit(4);
         
         FragmentStateAdapter adapter = new FragmentStateAdapter(this) {
             @NonNull
@@ -189,16 +190,17 @@ public class MainActivity extends BaseActivity {
                 Log.d(TAG, "Creating fragment at position: " + position);
                 switch (position) {
                     case 0: return new HomeFragment();
-                    case 1: return new ChatFragment();
+                    case 1: return new SafetyTimerFragment();
                     case 2: return new MapFragment();
-                    case 3: return new ProfileFragment();
+                    case 3: return new SosHistoryFragment();
+                    case 4: return new ProfileFragment();
                     default: return new HomeFragment();
                 }
             }
 
             @Override
             public int getItemCount() {
-                return 4;
+                return 5;
             }
         };
         viewPager.setAdapter(adapter);
@@ -206,18 +208,20 @@ public class MainActivity extends BaseActivity {
 
     private int getPositionFromItemId(int itemId) {
         if (itemId == R.id.nav_home) return 0;
-        if (itemId == R.id.nav_message) return 1;
+        if (itemId == R.id.nav_safety_timer) return 1;
         if (itemId == R.id.nav_map) return 2;
-        if (itemId == R.id.nav_profile) return 3;
+        if (itemId == R.id.nav_history) return 3;
+        if (itemId == R.id.nav_profile) return 4;
         return 0;
     }
 
     private int getItemIdFromPosition(int position) {
         switch (position) {
             case 0: return R.id.nav_home;
-            case 1: return R.id.nav_message;
+            case 1: return R.id.nav_safety_timer;
             case 2: return R.id.nav_map;
-            case 3: return R.id.nav_profile;
+            case 3: return R.id.nav_history;
+            case 4: return R.id.nav_profile;
             default: return R.id.nav_home;
         }
     }
@@ -249,24 +253,26 @@ public class MainActivity extends BaseActivity {
         bottomNavigationView.setSelectedItemId(targetId);
     }
 
-    private void updateProfileData() {
-        String imageUriString = triggerManager.getProfileImageUri();
-        Glide.with(this)
-                .load(imageUriString != null && !imageUriString.isEmpty() ? Uri.parse(imageUriString) : null)
-                .placeholder(R.drawable.profile_pic)
-                .error(R.drawable.profile_pic)
-                .circleCrop()
-                .into(ivToolbarProfile);
-    }
-
     private void updateOnlineStatus() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         boolean isConnected = false;
         if (cm != null) {
-            NetworkCapabilities nc = cm.getNetworkCapabilities(cm.getActiveNetwork());
-            isConnected = nc != null && (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
+            Network network = cm.getActiveNetwork();
+            if (network != null) {
+                NetworkCapabilities nc = cm.getNetworkCapabilities(network);
+                if (nc != null) {
+                    // Check for specific transports (WiFi or Mobile Data) and internet capability
+                    isConnected = (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || 
+                                  nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) &&
+                                  nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+                }
+            }
         }
-        onlineStatusDot.setBackgroundResource(isConnected ? R.drawable.status_dot_green : R.drawable.status_dot_red);
+        
+        if (onlineStatusDot != null) {
+            final boolean finalIsConnected = isConnected;
+            runOnUiThread(() -> onlineStatusDot.setBackgroundResource(finalIsConnected ? R.drawable.status_dot_green : R.drawable.status_dot_red));
+        }
     }
 
     private void startBeaconService() {

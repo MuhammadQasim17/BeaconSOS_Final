@@ -18,10 +18,10 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:layout_marginTop="16dp"
             app:title="Edit Contact"
             app:titleTextColor="@color/white"
-            app:navigationIcon="?attr/homeAsUpIndicator"
-            app:navigationIconTint="@color/white" />
+            app:navigationIcon="@drawable/ic_back_custom" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView

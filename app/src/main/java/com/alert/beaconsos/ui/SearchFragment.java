@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.Contact;
-import com.alert.beaconsos.data.Group;
 import com.alert.beaconsos.data.SearchResult;
 import com.alert.beaconsos.data.TriggerManager;
 
@@ -72,26 +71,21 @@ public class SearchFragment extends Fragment {
         allSearchableItems = new ArrayList<>();
 
         // Add Settings/Profile items
-        allSearchableItems.add(new SearchResult("Profile", "View and edit your profile", android.R.drawable.ic_menu_edit, new Intent(getContext(), ProfileActivity.class)));
-        allSearchableItems.add(new SearchResult("Settings", "App preferences and configuration", android.R.drawable.ic_menu_preferences, new Intent(getContext(), SettingsActivity.class)));
-        allSearchableItems.add(new SearchResult("Emergency Message", "Edit your SOS message", android.R.drawable.ic_menu_send, new Intent(getContext(), AlertMessageActivity.class)));
-        allSearchableItems.add(new SearchResult("Change Password", "Update your account security", android.R.drawable.ic_lock_idle_lock, new Intent(getContext(), ChangePasswordActivity.class)));
-        allSearchableItems.add(new SearchResult("Trusted Contacts", "Manage your emergency contacts", android.R.drawable.ic_menu_myplaces, new Intent(getContext(), TrustedContactsActivity.class)));
+        allSearchableItems.add(new SearchResult("Profile", "View and edit your profile", R.drawable.ic_edit_profile_new, new Intent(getContext(), ProfileActivity.class)));
+        allSearchableItems.add(new SearchResult("Settings", "App preferences and configuration", R.drawable.ic_settings_new, new Intent(getContext(), SettingsActivity.class)));
+        allSearchableItems.add(new SearchResult("Emergency Message", "Edit your SOS message", R.drawable.ic_emergency_contacts_new, new Intent(getContext(), AlertMessageActivity.class)));
+        allSearchableItems.add(new SearchResult("Change Password", "Update your account security", R.drawable.ic_password_new, new Intent(getContext(), ChangePasswordActivity.class)));
+        allSearchableItems.add(new SearchResult("Trusted Contacts", "Manage your emergency contacts", R.drawable.ic_trusted_contacts_new, new Intent(getContext(), TrustedContactsActivity.class)));
 
         // Add Contacts
         List<Contact> contacts = triggerManager.getContacts();
         for (Contact contact : contacts) {
             Intent intent = new Intent(getContext(), EditContactActivity.class);
-            intent.putExtra("CONTACT_ID", contact.getId());
-            allSearchableItems.add(new SearchResult(contact.getName(), "Contact: " + contact.getPhoneNumber(), android.R.drawable.ic_menu_call, intent));
-        }
-
-        // Add Groups
-        List<Group> groups = triggerManager.getGroups();
-        for (Group group : groups) {
-            Intent intent = new Intent(getContext(), GroupChatActivity.class);
-            intent.putExtra("GROUP_ID", group.getId());
-            allSearchableItems.add(new SearchResult(group.getName(), "Chat Group (" + group.getMemberPhones().size() + " members)", android.R.drawable.ic_menu_agenda, intent));
+            intent.putExtra("contact_id", contact.getId());
+            intent.putExtra("contact_name", contact.getName());
+            intent.putExtra("contact_phone", contact.getPhoneNumber());
+            intent.putExtra("contact_relation", contact.getRelation());
+            allSearchableItems.add(new SearchResult(contact.getName(), "Contact: " + contact.getPhoneNumber(), R.drawable.ic_profile_new, intent));
         }
     }
 

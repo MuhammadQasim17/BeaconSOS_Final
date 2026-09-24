@@ -9,14 +9,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
-import android.database.ContentObserver;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
-import android.media.session.MediaSession;
-import android.media.session.PlaybackState;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -24,7 +23,6 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -61,108 +59,32 @@ public class BeaconService extends Service implements AudioDetector.OnTriggerDet
     private ShakeDetector mShakeDetector;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private PowerManager.WakeLock wakeLock;
+    
     private boolean isPhoneCallActive = false;
-
-    // Volume Trigger Variables
-    private long lastVolumePressTime = 0;
-    private static final long VOLUME_INTERVAL = 1500; // Increased window for manual presses
     private boolean isSendingSos = false;
-    private VolumeObserver volumeObserver;
-    private MediaSession mediaSession;
+    private boolean isInitialized = false;
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener prefListener = (sharedPreferences, key) -> {
+        if ("perm_mic_enabled".equals(key)) checkAndStartMic();
+    };
 
     private final BroadcastReceiver callReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
-            if (TelephonyManager.EXTRA_STATE_RINGING.equals(state) || TelephonyManager.EXTRA_STATE_OFFHOOK.equals(state)) {
-                isPhoneCallActive = true;
-                if (audioDetector != null) audioDetector.stopListening();
-            } else if (TelephonyManager.EXTRA_STATE_IDLE.equals(state)) {
-                isPhoneCallActive = false;
-                checkAndStartMic();
-            }
+            isPhoneCallActive = TelephonyManager.EXTRA_STATE_RINGING.equals(state) || TelephonyManager.EXTRA_STATE_OFFHOOK.equals(state);
+            if (isPhoneCallActive && audioDetector != null) audioDetector.stopListening();
+            else if (audioDetector != null) checkAndStartMic();
         }
     };
 
-    private final BroadcastReceiver screenOffReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
-                Log.d(TAG, "Screen OFF. Reinforcing detection.");
-                if (wakeLock != null && !wakeLock.isHeld()) {
-                    wakeLock.acquire(30 * 60 * 1000L); // 30 mins to ensure background work
-                }
-            }
-        }
-    };
-
-    private final BroadcastReceiver volumeButtonReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if ("android.media.VOLUME_CHANGED_ACTION".equals(intent.getAction())) {
-                if (triggerManager.isVolumeTriggerEnabled()) {
-                    int volume = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1);
-                    int prevVolume = intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
-                    int streamType = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1);
-                    handleVolumePress(streamType, volume, prevVolume);
-                }
-            }
-        }
-    };
-
-    private class VolumeObserver extends ContentObserver {
-        private final AudioManager am;
-        private int lastVol;
-
-        public VolumeObserver(Handler handler) {
-            super(handler);
-            am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            lastVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            super.onChange(selfChange);
-            if (!triggerManager.isVolumeTriggerEnabled()) return;
-            
-            int currentVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-            if (currentVol != lastVol) {
-                Log.d(TAG, "Volume Observer detected change: " + lastVol + " -> " + currentVol);
-                handleVolumePress(AudioManager.STREAM_MUSIC, currentVol, lastVol);
-                lastVol = currentVol;
-            }
-        }
-    }
-
-    private void handleVolumePress(int streamType, int volume, int prevVolume) {
-        if (streamType == -1) streamType = AudioManager.STREAM_MUSIC;
-        
-        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        int max = am.getStreamMaxVolume(streamType);
-
-        // Detect Volume UP or attempt to go UP at max
-        if (volume >= prevVolume && prevVolume != -1) {
-            // Nudge logic to ensure future presses are detected as "changes"
-            if (volume == max) {
-                am.setStreamVolume(streamType, max - 1, 0);
-            }
-
-            long currentTime = System.currentTimeMillis();
-            if (lastVolumePressTime != 0 && (currentTime - lastVolumePressTime < VOLUME_INTERVAL)) {
-                if (!isSendingSos) {
-                    isSendingSos = true;
-                    Log.d(TAG, "DOUBLE VOLUME PRESS DETECTED! Triggering SOS.");
-                    vibrateFeedback();
-                    triggerSosProcedure("Volume Trigger");
-                    mHandler.postDelayed(() -> isSendingSos = false, 5000);
-                }
-                lastVolumePressTime = 0;
-            } else {
-                lastVolumePressTime = currentTime;
-            }
-        } else if (volume < prevVolume) {
-            // Volume DOWN resets the timer
-            lastVolumePressTime = 0;
+    private void executeSosAction(String triggerType) {
+        if (!isSendingSos) {
+            isSendingSos = true;
+            vibrateFeedback();
+            mHandler.post(() -> Toast.makeText(getApplicationContext(), "SOS TRIGGER DETECTED!", Toast.LENGTH_SHORT).show());
+            triggerSosProcedure(triggerType);
+            mHandler.postDelayed(() -> isSendingSos = false, 5000); // 5s cooldown
         }
     }
 
@@ -179,150 +101,87 @@ public class BeaconService extends Service implements AudioDetector.OnTriggerDet
         mShakeDetector = new ShakeDetector();
         mShakeDetector.setOnShakeListener(this);
 
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        if (powerManager != null) {
-            wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BeaconSOS:TriggerWakeLock");
+        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+        if (pm != null) {
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BeaconSOS:TriggerWakeLock");
             wakeLock.setReferenceCounted(false);
+            if (!wakeLock.isHeld()) wakeLock.acquire(10 * 60 * 60 * 1000L); // High-persistence lock
         }
 
-        // 1. Broadcast Receiver for Volume (Legacy/Normal mode)
-        IntentFilter volumeFilter = new IntentFilter("android.media.VOLUME_CHANGED_ACTION");
-        volumeFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
-        registerReceiver(volumeButtonReceiver, volumeFilter);
+        registerReceiver(callReceiver, new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED));
+        
+        getSharedPreferences("BeaconSOSPrefs", Context.MODE_PRIVATE).registerOnSharedPreferenceChangeListener(prefListener);
+        audioDetector = new AudioDetector(this, this);
 
-        // 2. Content Observer for Volume (Reliable Screen-OFF mode)
-        volumeObserver = new VolumeObserver(mHandler);
-        getContentResolver().registerContentObserver(Settings.System.CONTENT_URI, true, volumeObserver);
-
-        // 3. Receivers for Lifecycle/Phone State
-        IntentFilter callFilter = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        registerReceiver(callReceiver, callFilter);
-
-        IntentFilter screenFilter = new IntentFilter();
-        screenFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        screenFilter.addAction(Intent.ACTION_SCREEN_ON);
-        registerReceiver(screenOffReceiver, screenFilter);
-
-        // 4. Media Session (Keeps service "Active" in system's eye)
-        setupMediaSession();
-    }
-
-    private void setupMediaSession() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mediaSession = new MediaSession(this, "BeaconSOS");
-            mediaSession.setPlaybackState(new PlaybackState.Builder()
-                    .setState(PlaybackState.STATE_PLAYING, 0, 1.0f)
-                    .build());
-            mediaSession.setActive(true);
-        }
+        // Startup Safety Delay
+        mHandler.postDelayed(() -> {
+            isInitialized = true;
+        }, 3000);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (wakeLock != null && !wakeLock.isHeld()) {
-            wakeLock.acquire(10 * 60 * 60 * 1000L); // 10 hours
+        if (intent != null && "TRIGGER_SOS_FROM_TIMER".equals(intent.getAction())) {
+            executeSosAction("Safety Timer");
         }
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Beacon SOS Active")
-                .setContentText("Monitoring for your safety...")
+                .setContentTitle("Beacon SOS Protection Active")
+                .setContentText("Monitoring for emergency triggers...")
                 .setSmallIcon(R.mipmap.ic_app_logo)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setOngoing(true)
-                .build();
+                .setOngoing(true).build();
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE | ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
-                startForeground(1, notification, type);
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE | ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
-            } else {
-                startForeground(1, notification);
-            }
-        } catch (Exception e) {
-            try { startForeground(1, notification); } catch (Exception ignored) {}
-        }
-
-        if (audioDetector == null) {
-            audioDetector = new AudioDetector(this, this);
-        }
+            int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE | ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) startForeground(1, notification, type);
+            else startForeground(1, notification);
+        } catch (Exception e) { startForeground(1, notification); }
         
         checkAndStartMic();
-        nudgeVolumeDownIfMax();
-
         mSensorManager.registerListener(mShakeDetector, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
         return START_STICKY;
     }
 
-    private void nudgeVolumeDownIfMax() {
-        try {
-            if (triggerManager.isVolumeTriggerEnabled()) {
-                AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                int volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-                int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-                if (volume == max) {
-                    am.setStreamVolume(AudioManager.STREAM_MUSIC, max - 1, 0);
-                }
-            }
-        } catch (Exception e) {}
-    }
-
     private void checkAndStartMic() {
-        boolean micPermGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
-        boolean micEnabledInApp = triggerManager.isMicPermissionEnabled();
-        if (micPermGranted && micEnabledInApp && !isPhoneCallActive) {
+        boolean granted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+        if (granted && triggerManager.isMicPermissionEnabled() && !isPhoneCallActive) {
             if (audioDetector != null) audioDetector.startListening();
-        } else {
-            if (audioDetector != null) audioDetector.stopListening();
-        }
+        } else if (audioDetector != null) audioDetector.stopListening();
     }
 
     @Override
     public void onShake(int count) {
-        if (triggerManager.isShakeTriggerEnabled() && count >= 2) {
-            if (!isSendingSos) {
-                isSendingSos = true;
-                vibrateFeedback();
-                triggerSosProcedure("Shake Trigger");
-                mHandler.postDelayed(() -> isSendingSos = false, 5000);
-            }
+        if (isInitialized && triggerManager.isShakeTriggerEnabled() && count >= 3) {
+            executeSosAction("Shake Trigger");
         }
     }
 
     private void vibrateFeedback() {
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (v != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-            } else {
-                v.vibrate(500);
-            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            else v.vibrate(500);
         }
     }
 
     @Override
     public void onTriggerDetected() {
-        if (!isSendingSos) {
-            isSendingSos = true;
-            vibrateFeedback();
-            triggerSosProcedure("Voice Trigger");
-            mHandler.postDelayed(() -> isSendingSos = false, 5000);
+        if (isInitialized) {
+            executeSosAction("Voice Trigger");
         }
     }
 
     private void triggerSosProcedure(String triggerType) {
-        if (wakeLock != null && !wakeLock.isHeld()) {
-            wakeLock.acquire(45000); // 45 seconds to ensure GPS/Network finishes
-        }
+        if (wakeLock != null && !wakeLock.isHeld()) wakeLock.acquire(45000); 
         sendEmergencySms(triggerType);
     }
 
     private void sendEmergencySms(String triggerType) {
-        List<Contact> allContacts = triggerManager.getContacts();
+        List<Contact> allRecipients = triggerManager.getSosRecipients();
         Set<String> selectedIds = triggerManager.getSelectedContactIds();
         
-        if (allContacts.isEmpty() || selectedIds.isEmpty()) {
+        if (allRecipients.isEmpty() || selectedIds.isEmpty()) {
             isSendingSos = false;
             if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
             return;
@@ -335,32 +194,22 @@ public class BeaconService extends Service implements AudioDetector.OnTriggerDet
                 return;
             }
 
-            String customMessage = triggerManager.getEmergencyMessage();
-            String locationPart = (triggerManager.isLocationPermissionEnabled() && 
-                                  ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) 
-                                  ? (" " + locationUrl) : " [Location Disabled]";
+            String msg = triggerManager.getEmergencyMessage();
+            String full = msg.contains("[URL]") ? msg.replace("[URL]", locationUrl != null ? locationUrl : "[Location Unknown]") : msg + (locationUrl != null ? " " + locationUrl : "");
             
-            String fullMessage = customMessage + locationPart;
-            List<String> sentToNames = new ArrayList<>();
-            int sentCount = 0;
-            
-            for (Contact contact : allContacts) {
-                if (selectedIds.contains(contact.getId())) {
-                    smsHelper.sendSms(contact.getPhoneNumber(), fullMessage);
-                    sentToNames.add(contact.getName());
-                    sentCount++;
+            List<String> names = new ArrayList<>();
+            int count = 0;
+            for (Contact contact : allRecipients) {
+                String normPhone = TriggerManager.normalizePhone(contact.getPhoneNumber());
+                if (selectedIds.contains(normPhone)) {
+                    smsHelper.sendSms(contact.getPhoneNumber(), full);
+                    names.add(contact.getName());
+                    count++;
                 }
             }
             
-            if (sentCount > 0) {
-                SosHistoryEntry entry = new SosHistoryEntry(
-                    UUID.randomUUID().toString(),
-                    System.currentTimeMillis(),
-                    fullMessage,
-                    sentToNames,
-                    triggerType
-                );
-                triggerManager.addSosHistoryEntry(entry);
+            if (count > 0) {
+                triggerManager.addSosHistoryEntry(new SosHistoryEntry(UUID.randomUUID().toString(), System.currentTimeMillis(), full, names, triggerType));
             }
             
             mHandler.post(() -> {
@@ -373,12 +222,9 @@ public class BeaconService extends Service implements AudioDetector.OnTriggerDet
     @Override
     public void onDestroy() {
         try { unregisterReceiver(callReceiver); } catch (Exception ignored) {}
-        try { unregisterReceiver(screenOffReceiver); } catch (Exception ignored) {}
-        try { unregisterReceiver(volumeButtonReceiver); } catch (Exception ignored) {}
-        if (volumeObserver != null) getContentResolver().unregisterContentObserver(volumeObserver);
+        getSharedPreferences("BeaconSOSPrefs", Context.MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(prefListener);
         mSensorManager.unregisterListener(mShakeDetector);
         if (audioDetector != null) audioDetector.stopListening();
-        if (mediaSession != null) mediaSession.release();
         if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
         super.onDestroy();
     }
@@ -389,11 +235,9 @@ public class BeaconService extends Service implements AudioDetector.OnTriggerDet
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID, "Beacon Service Channel", NotificationManager.IMPORTANCE_LOW
-            );
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Beacon Service Channel", NotificationManager.IMPORTANCE_LOW);
             NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) manager.createNotificationChannel(serviceChannel);
+            if (manager != null) manager.createNotificationChannel(channel);
         }
     }
 }

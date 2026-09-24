@@ -60,7 +60,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_call"
+            android:src="@drawable/ic_call"
             android:padding="8dp"
             android:scaleType="fitCenter"
             app:tint="@color/white" />
@@ -70,9 +70,9 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_delete"
+            android:src="@drawable/ic_delete"
             android:padding="8dp"
             android:scaleType="fitCenter"
-            app:tint="@color/red" />
+            app:tint="@color/error_red" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

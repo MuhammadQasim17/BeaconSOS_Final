@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/vibrant_gradient_bg">
+    android:background="@color/color_background">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:elevation="0dp"
+        android:background="@color/color_primary"
+        app:elevation="4dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
@@ -20,8 +20,7 @@
             android:layout_height="?attr/actionBarSize"
             app:title="@string/title_trusted_contacts"
             app:titleTextColor="@color/white"
-            app:navigationIcon="?attr/homeAsUpIndicator"
-            app:navigationIconTint="@color/white" />
+            app:navigationIcon="@drawable/ic_back_white" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <TextView
@@ -32,9 +31,49 @@
         android:layout_marginStart="16dp"
         android:text="@string/label_your_trusted_contacts"
         android:textStyle="bold"
-        android:textColor="@color/white"
+        android:textColor="@color/color_on_surface"
+        android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/appBarLayout"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/layoutEmptyState"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tvListTitle"
+        app:layout_constraintBottom_toTopOf="@id/cardAddContact">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_nav_profile"
+            app:tint="@color/color_secondary"
+            android:contentDescription="@string/cd_empty_contacts" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/empty_contacts_title"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/color_on_surface" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/empty_contacts_desc"
+            android:textSize="14sp"
+            android:textColor="@color/color_on_surface_variant" />
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvContacts"
@@ -53,9 +92,9 @@
         android:layout_margin="16dp"
         android:visibility="gone"
         app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="#33FFFFFF"
-        app:strokeColor="#33FFFFFF"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/color_surface"
+        app:strokeColor="@color/color_outline"
         app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -68,34 +107,26 @@
             <Button
                 android:id="@+id/btnPickContact"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="52dp"
                 android:text="@string/btn_pick_from_contacts"
                 android:layout_marginBottom="12dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 app:cornerRadius="12dp"
-                android:textColor="@color/white"
-                app:strokeColor="@color/white"
+                android:textColor="@color/color_primary"
+                app:strokeColor="@color/color_primary"
                 app:icon="@android:drawable/ic_menu_search"
-                app:iconTint="@color/white" />
+                app:iconTint="@color/color_primary" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:boxBackgroundColor="#33FFFFFF"
-                app:boxStrokeColor="@color/white"
-                app:hintTextColor="@color/white"
-                app:boxCornerRadiusTopStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusBottomEnd="12dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etNewContactName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/hint_contact_name"
-                    android:textColor="@color/white"
-                    android:textColorHint="#CCFFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -103,21 +134,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:boxBackgroundColor="#33FFFFFF"
-                app:boxStrokeColor="@color/white"
-                app:hintTextColor="@color/white"
-                app:boxCornerRadiusTopStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusBottomEnd="12dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etNewPhoneNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/hint_phone_number"
-                    android:textColor="@color/white"
-                    android:textColorHint="#CCFFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:inputType="phone" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -125,32 +148,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:boxBackgroundColor="#33FFFFFF"
-                app:boxStrokeColor="@color/white"
-                app:hintTextColor="@color/white"
-                app:boxCornerRadiusTopStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusBottomEnd="12dp"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etNewRelation"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/hint_relation"
-                    android:textColor="@color/white"
-                    android:textColorHint="#CCFFFFFF"
+                    android:textColor="@color/color_on_surface"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
                 android:id="@+id/btnAddContact"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="52dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/btn_save_contact"
-                android:backgroundTint="@color/white"
-                android:textColor="#1E88E5"
+                android:backgroundTint="@color/color_primary"
+                android:textColor="@color/white"
                 app:cornerRadius="12dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -166,14 +181,14 @@
         android:id="@+id/btnToggleAddContact"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="36dp"
         android:contentDescription="@string/btn_add_trusted_contact"
         android:src="@android:drawable/ic_input_add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:tint="@color/white"
-        app:backgroundTint="#33FFFFFF"
-        app:elevation="0dp"
-        app:borderWidth="1dp" />
+        app:backgroundTint="@color/color_primary"
+        app:elevation="6dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

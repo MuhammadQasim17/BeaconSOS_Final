@@ -22,14 +22,23 @@ import androidx.fragment.app.Fragment;
 
 import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.Contact;
+import com.alert.beaconsos.data.SosHistoryEntry;
 import com.alert.beaconsos.data.TriggerManager;
+import com.alert.beaconsos.data.User;
 import com.alert.beaconsos.location.LocationHelper;
 import com.alert.beaconsos.utils.LoadingUtils;
 import com.alert.beaconsos.utils.SmsHelper;
 import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class HomeFragment extends Fragment {
 
@@ -42,7 +51,7 @@ public class HomeFragment extends Fragment {
     private TextView textViewStatus, tvStatusMic, tvStatusLoc, tvStatusSms;
     private View statusDot;
     private View customLoading;
-    private TextView tvLoadingText;
+    private TextView tvLoadingText, tvWelcome;
 
     @Nullable
     @Override
@@ -53,7 +62,7 @@ public class HomeFragment extends Fragment {
         locationHelper = new LocationHelper(requireContext());
         smsHelper = new SmsHelper(requireContext());
 
-        TextView tvWelcome = view.findViewById(R.id.tvWelcome);
+        tvWelcome = view.findViewById(R.id.tvWelcome);
         cardStatus = view.findViewById(R.id.cardStatus);
         layoutStatusContent = view.findViewById(R.id.layoutStatusContent);
         layoutStatusDetails = view.findViewById(R.id.layoutStatusDetails);
@@ -161,7 +170,32 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        syncUserDataFromFirebase();
         updateStatusUI();
+    }
+
+    private void syncUserDataFromFirebase() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
+
+        FirebaseDatabase.getInstance().getReference("users").child(uid)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            User user = snapshot.getValue(User.class);
+                            if (user != null && user.getName() != null && !user.getName().isEmpty()) {
+                                triggerManager.saveUserName(user.getName());
+                                if (tvWelcome != null && isAdded()) {
+                                    tvWelcome.setText(getString(R.string.welcome_back, user.getName()));
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
     }
 
     private void showLoading(String message) {
@@ -180,10 +214,10 @@ public class HomeFragment extends Fragment {
     }
 
     private void triggerEmergencySms() {
-        List<Contact> allContacts = triggerManager.getContacts();
+        List<Contact> allRecipients = triggerManager.getSosRecipients();
         Set<String> selectedIds = triggerManager.getSelectedContactIds();
 
-        if (allContacts.isEmpty() || selectedIds.isEmpty()) {
+        if (allRecipients.isEmpty() || selectedIds.isEmpty()) {
             Toast.makeText(getContext(), "No contacts selected. Please go to 'Alert Message' and select contacts.", Toast.LENGTH_LONG).show();
             return;
         }
@@ -201,16 +235,20 @@ public class HomeFragment extends Fragment {
             String locationPart = triggerManager.isLocationPermissionEnabled() ? (" My location: " + locationUrl) : " [Location Disabled]";
             String fullMessage = customMessage + locationPart;
 
+            List<String> names = new ArrayList<>();
             int sentCount = 0;
-            for (Contact contact : allContacts) {
-                if (selectedIds.contains(contact.getId())) {
+            for (Contact contact : allRecipients) {
+                String normPhone = TriggerManager.normalizePhone(contact.getPhoneNumber());
+                if (selectedIds.contains(normPhone)) {
                     smsHelper.sendSms(contact.getPhoneNumber(), fullMessage);
+                    names.add(contact.getName());
                     sentCount++;
                 }
             }
 
             hideLoading();
             if (sentCount > 0) {
+                triggerManager.addSosHistoryEntry(new SosHistoryEntry(UUID.randomUUID().toString(), System.currentTimeMillis(), fullMessage, names, "Manual SOS Button"));
                 Toast.makeText(getContext(), "SOS SMS SENT TO " + sentCount + " CONTACTS", Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(getContext(), "Failed to send SOS. Check contact selection.", Toast.LENGTH_SHORT).show();

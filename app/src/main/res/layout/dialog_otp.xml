@@ -31,4 +31,18 @@
             android:textStyle="bold" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <TextView
+        android:id="@+id/tvResendOtp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Didn't receive code? Resend"
+        android:textColor="@color/error_red"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginTop="12dp"
+        android:layout_gravity="center"
+        android:padding="8dp"
+        android:clickable="true"
+        android:focusable="true" />
+
 </LinearLayout>

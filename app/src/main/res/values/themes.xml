@@ -1,61 +1,115 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. Set to Light by default. -->
-    <style name="Theme.BeaconSOS" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/primary_blue</item>
-        <item name="colorPrimaryVariant">@color/primary_dark_blue</item>
-        <item name="colorOnPrimary">@color/white</item>
+    <!-- Base application theme using Material 3 -->
+    <style name="Theme.BeaconSOS" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand colors -->
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="colorOnPrimary">@color/color_on_primary</item>
+        <item name="colorPrimaryContainer">@color/sky_blue</item>
+        <item name="colorOnPrimaryContainer">@color/color_primary_variant</item>
 
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/accent_blue</item>
+        <!-- Secondary brand colors -->
+        <item name="colorSecondary">@color/color_secondary</item>
         <item name="colorOnSecondary">@color/white</item>
 
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Status & Navigation bar colors -->
+        <item name="android:statusBarColor">@color/color_primary_variant</item>
 
         <!-- Surfaces & Backgrounds -->
-        <item name="android:windowBackground">@color/background_color</item>
-        <item name="colorSurface">@color/surface_color</item>
-        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:windowBackground">@color/color_background</item>
+        <item name="colorSurface">@color/color_surface</item>
+        <item name="colorOnSurface">@color/color_on_surface</item>
+        <item name="colorSurfaceVariant">@color/color_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/color_on_surface_variant</item>
+        <item name="colorError">@color/color_error</item>
 
-        <!-- Text Colors -->
-        <item name="android:textColorPrimary">@color/text_primary</item>
-        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <!-- Typography Defaults -->
+        <item name="android:textColorPrimary">@color/color_on_surface</item>
+        <item name="android:textColorSecondary">@color/color_on_surface_variant</item>
         <item name="android:textColorHint">@color/text_hint</item>
 
-        <!-- Custom Attributes -->
-        <item name="dividerHorizontal">@color/divider_color</item>
-
-        <!-- Explicitly disable the default Action Bar -->
+        <!-- Custom Attributes & Compatibility -->
+        <item name="dividerHorizontal">@color/color_outline</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
 
-        <!-- Popup Menu Styles for Glassy Effect -->
+        <!-- Global Navigation Icon Tint -->
+        <item name="navigationIconTint">@color/white</item>
+        <item name="colorControlNormal">@color/white</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_back_white</item>
+
+        <!-- Popup Menu Styles -->
         <item name="android:popupMenuStyle">@style/GlassyPopupMenu</item>
         <item name="popupMenuStyle">@style/GlassyPopupMenu</item>
     </style>
 
+    <!-- Material 3 Typography Styles -->
+    <style name="TextAppearance.BeaconSOS.Headline" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+
+        <item name="android:textColor">@color/color_on_surface</item>
+    </style>
+
+    <style name="TextAppearance.BeaconSOS.Title" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/color_on_surface</item>
+    </style>
+
+    <style name="TextAppearance.BeaconSOS.Body" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/color_on_surface</item>
+    </style>
+
+    <style name="TextAppearance.BeaconSOS.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/color_on_surface_variant</item>
+    </style>
+
+    <!-- Custom View Styles -->
     <style name="CircleImage">
         <item name="cornerSize">50%</item>
     </style>
 
-    <style name="GlassyDialog" parent="Theme.MaterialComponents.Light.Dialog">
+    <style name="AboutFeatureRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_medium</item>
+    </style>
+
+    <style name="AboutFeatureIcon">
+        <item name="android:layout_width">20dp</item>
+        <item name="android:layout_height">20dp</item>
+        <item name="android:tint">#FFEB3B</item>
+    </style>
+
+    <style name="AboutFeatureText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/spacing_medium</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="GlassyDialog" parent="Theme.Material3.DayNight.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowMinWidthMajor">90%</item>
         <item name="android:windowMinWidthMinor">90%</item>
+        <item name="background">@android:color/transparent</item>
     </style>
 
     <style name="GlassyPopupMenu" parent="Widget.AppCompat.PopupMenu">
         <item name="android:popupBackground">@drawable/glassy_menu_bg</item>
     </style>
 
-    <!-- Dedicated theme for the PopupMenu wrapper -->
-    <style name="GlassyPopupTheme" parent="Theme.MaterialComponents.Light">
+    <style name="GlassyPopupTheme" parent="Theme.Material3.DayNight">
         <item name="android:popupMenuStyle">@style/GlassyPopupMenu</item>
         <item name="popupMenuStyle">@style/GlassyPopupMenu</item>
-        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorPrimary">@color/color_on_surface</item>
     </style>
 
     <style name="GlassySearchView" parent="Widget.AppCompat.SearchView">

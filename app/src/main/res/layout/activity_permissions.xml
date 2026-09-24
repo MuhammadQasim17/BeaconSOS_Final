@@ -9,12 +9,12 @@
         android:id="@+id/toolbarPermissions"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_marginTop="16dp"
         android:background="@android:color/transparent"
         app:title="App Permissions"
         app:titleTextColor="@android:color/white"
         app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="?attr/homeAsUpIndicator"
-        app:navigationIconTint="@color/white" />
+        app:navigationIcon="@drawable/ic_back_custom" />
 
     <ScrollView
         android:layout_width="match_parent"

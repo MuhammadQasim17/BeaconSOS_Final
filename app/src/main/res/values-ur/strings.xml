@@ -13,6 +13,7 @@
     <string name="settings_theme_mode">ڈسپلے موڈ</string>
     <string name="theme_light">لائٹ موڈ</string>
     <string name="theme_dark">ڈارک موڈ</string>
+    <string name="theme_system">سسٹم کے مطابق</string>
     <string name="settings_language">ایپ کی زبان</string>
     <string name="settings_language_desc">زبان تبدیل کرنے سے ایپ کی تمام تحریریں اپ ڈیٹ ہو جائیں گی۔</string>
 

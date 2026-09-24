@@ -11,24 +11,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.alert.beaconsos.R;
-import com.alert.beaconsos.data.TriggerManager;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class ChangePasswordActivity extends AppCompatActivity {
 
     private EditText etCurrent, etNew, etConfirm;
-    private Button btnUpdate, btnForgot;
+    private Button btnUpdate;
     private View customLoading;
     private TextView tvLoadingText;
-    private TriggerManager triggerManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
-
-        triggerManager = new TriggerManager(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -42,23 +40,17 @@ public class ChangePasswordActivity extends AppCompatActivity {
         etNew = findViewById(R.id.etNewPassword);
         etConfirm = findViewById(R.id.etConfirmNewPassword);
         btnUpdate = findViewById(R.id.btnUpdatePassword);
-        btnForgot = findViewById(R.id.btnForgotPassword);
         
         customLoading = findViewById(R.id.customLoading);
         tvLoadingText = findViewById(R.id.tvLoadingText);
 
         btnUpdate.setOnClickListener(v -> {
-            String current = etCurrent.getText().toString();
-            String newPass = etNew.getText().toString();
-            String confirm = etConfirm.getText().toString();
+            String current = etCurrent.getText().toString().trim();
+            String newPass = etNew.getText().toString().trim();
+            String confirm = etConfirm.getText().toString().trim();
 
             if (current.isEmpty() || newPass.isEmpty() || confirm.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (!current.equals(triggerManager.getUserPassword())) {
-                Toast.makeText(this, "Incorrect current password", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -66,34 +58,41 @@ public class ChangePasswordActivity extends AppCompatActivity {
                 Toast.makeText(this, "New passwords do not match", Toast.LENGTH_SHORT).show();
                 return;
             }
-            
-            updatePasswordInFirebase(newPass);
-        });
 
-        btnForgot.setOnClickListener(v -> {
-            Toast.makeText(this, "Verification email sent to: " + triggerManager.getUserEmail(), Toast.LENGTH_LONG).show();
+            if (newPass.length() < 8) {
+                Toast.makeText(this, "New password must be at least 8 characters", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            updatePasswordInFirebase(current, newPass);
         });
     }
 
-    private void updatePasswordInFirebase(String newPassword) {
-        String phone = triggerManager.getUserPhone();
-        if (phone.isEmpty()) {
-            Toast.makeText(this, "User session error", Toast.LENGTH_SHORT).show();
+    private void updatePasswordInFirebase(String currentPassword, String newPassword) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || user.getEmail() == null) {
+            Toast.makeText(this, "You must be logged in to change password", Toast.LENGTH_SHORT).show();
             return;
         }
 
         showLoading("Updating Password...");
-        
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(phone);
-        userRef.child("password").setValue(newPassword).addOnCompleteListener(task -> {
-            hideLoading();
-            if (task.isSuccessful()) {
-                // Update local storage for future logins
-                triggerManager.saveUserPassword(newPassword);
-                Toast.makeText(this, "Password updated successfully!", Toast.LENGTH_SHORT).show();
-                finish();
+
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+        user.reauthenticate(credential).addOnCompleteListener(reauthTask -> {
+            if (reauthTask.isSuccessful()) {
+                user.updatePassword(newPassword).addOnCompleteListener(authTask -> {
+                    hideLoading();
+                    if (authTask.isSuccessful()) {
+                        Toast.makeText(this, "Password updated successfully!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        String error = authTask.getException() != null ? authTask.getException().getMessage() : "Failed to update password";
+                        Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                    }
+                });
             } else {
-                Toast.makeText(this, "Failed to update password in server", Toast.LENGTH_SHORT).show();
+                hideLoading();
+                Toast.makeText(this, "Incorrect current password", Toast.LENGTH_LONG).show();
             }
         });
     }

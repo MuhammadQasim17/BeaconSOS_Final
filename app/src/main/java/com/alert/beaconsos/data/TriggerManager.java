@@ -17,25 +17,23 @@ public class TriggerManager {
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_TRIGGER_WORD = "trigger_word";
     private static final String KEY_EMERGENCY_CONTACTS = "emergency_contacts_list";
+    private static final String KEY_SOS_RECIPIENTS = "sos_recipients_list";
     private static final String KEY_CHAT_CONTACTS = "chat_contacts_map";
     private static final String KEY_SELECTED_CONTACT_IDS = "selected_contact_ids";
     private static final String KEY_USER_ROLE = "user_role";
     private static final String KEY_USER_NAME = "user_name";
     private static final String KEY_USER_EMAIL = "user_email";
-    private static final String KEY_USER_PASSWORD = "user_password";
     private static final String KEY_USER_PHONE = "user_phone";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_EMERGENCY_MESSAGE = "emergency_message";
     private static final String KEY_PROFILE_IMAGE_URI = "profile_image_uri";
     private static final String KEY_LANGUAGE = "app_language";
     private static final String KEY_THEME_MODE = "theme_mode"; // 0: System, 1: Light, 2: Dark
-    private static final String KEY_GROUPS = "chat_groups";
     private static final String KEY_BLOCKED_PHONES = "blocked_phones";
     private static final String KEY_SOS_HISTORY = "sos_history";
     
     // Feature Keys
     private static final String KEY_SHAKE_ENABLED = "shake_trigger_enabled";
-    private static final String KEY_VOLUME_TRIGGER_ENABLED = "volume_trigger_enabled";
 
     // Permission Keys
     private static final String KEY_PERM_MIC = "perm_mic_enabled";
@@ -49,7 +47,7 @@ public class TriggerManager {
     private static final String KEY_VOICE_TRIGGER_PHRASE = "voice_trigger_phrase";
 
     private static final String DEFAULT_TRIGGER = "help";
-    private static final String DEFAULT_MESSAGE = "I am in trouble my current location is ";
+    private static final String DEFAULT_MESSAGE = "Emergency! I need help. My location:";
 
     private final SharedPreferences sharedPreferences;
     private final Gson gson;
@@ -100,6 +98,20 @@ public class TriggerManager {
 
     public List<Contact> getContacts() {
         String json = sharedPreferences.getString(KEY_EMERGENCY_CONTACTS, null);
+        if (json == null) {
+            return new ArrayList<>();
+        }
+        Type type = new TypeToken<ArrayList<Contact>>() {}.getType();
+        return gson.fromJson(json, type);
+    }
+
+    public void saveSosRecipients(List<Contact> contacts) {
+        String json = gson.toJson(contacts);
+        sharedPreferences.edit().putString(KEY_SOS_RECIPIENTS, json).apply();
+    }
+
+    public List<Contact> getSosRecipients() {
+        String json = sharedPreferences.getString(KEY_SOS_RECIPIENTS, null);
         if (json == null) {
             return new ArrayList<>();
         }
@@ -185,12 +197,18 @@ public class TriggerManager {
         return new HashSet<>(sharedPreferences.getStringSet(KEY_BLOCKED_PHONES, new HashSet<>()));
     }
 
-    public void saveSelectedContactIds(Set<String> ids) {
-        sharedPreferences.edit().putStringSet(KEY_SELECTED_CONTACT_IDS, ids).apply();
+    public void saveSelectedContactIds(Set<String> phones) {
+        Set<String> normalizedPhones = new HashSet<>();
+        for (String p : phones) {
+            normalizedPhones.add(normalizePhone(p));
+        }
+        sharedPreferences.edit().putStringSet(KEY_SELECTED_CONTACT_IDS, normalizedPhones).apply();
     }
 
     public Set<String> getSelectedContactIds() {
-        return sharedPreferences.getStringSet(KEY_SELECTED_CONTACT_IDS, new HashSet<>());
+        Set<String> set = sharedPreferences.getStringSet(KEY_SELECTED_CONTACT_IDS, null);
+        if (set == null) return new HashSet<>();
+        return new HashSet<>(set);
     }
 
     public void saveEmergencyMessage(String message) {
@@ -223,14 +241,6 @@ public class TriggerManager {
 
     public String getUserEmail() {
         return sharedPreferences.getString(KEY_USER_EMAIL, "");
-    }
-
-    public void saveUserPassword(String password) {
-        sharedPreferences.edit().putString(KEY_USER_PASSWORD, password).apply();
-    }
-
-    public String getUserPassword() {
-        return sharedPreferences.getString(KEY_USER_PASSWORD, "");
     }
 
     public void saveUserPhone(String phone) {
@@ -271,43 +281,6 @@ public class TriggerManager {
 
     public int getThemeMode() {
         return sharedPreferences.getInt(KEY_THEME_MODE, 0); // 0 is System/Follow System
-    }
-
-    public void saveGroups(List<Group> groups) {
-        String json = gson.toJson(groups);
-        sharedPreferences.edit().putString(KEY_GROUPS, json).apply();
-    }
-
-    public List<Group> getGroups() {
-        String json = sharedPreferences.getString(KEY_GROUPS, null);
-        if (json == null) {
-            return new ArrayList<>();
-        }
-        Type type = new TypeToken<ArrayList<Group>>() {}.getType();
-        return gson.fromJson(json, type);
-    }
-
-    public void addGroup(Group group) {
-        List<Group> groups = getGroups();
-        groups.add(group);
-        saveGroups(groups);
-    }
-
-    public void deleteGroup(String groupId) {
-        List<Group> groups = getGroups();
-        groups.removeIf(g -> g.getId().equals(groupId));
-        saveGroups(groups);
-    }
-
-    public void updateGroup(Group updatedGroup) {
-        List<Group> groups = getGroups();
-        for (int i = 0; i < groups.size(); i++) {
-            if (groups.get(i).getId().equals(updatedGroup.getId())) {
-                groups.set(i, updatedGroup);
-                break;
-            }
-        }
-        saveGroups(groups);
     }
 
     // Permission Management Methods
@@ -360,14 +333,6 @@ public class TriggerManager {
         return sharedPreferences.getBoolean(KEY_SHAKE_ENABLED, true);
     }
 
-    public void setVolumeTriggerEnabled(boolean enabled) {
-        sharedPreferences.edit().putBoolean(KEY_VOLUME_TRIGGER_ENABLED, enabled).apply();
-    }
-
-    public boolean isVolumeTriggerEnabled() {
-        return sharedPreferences.getBoolean(KEY_VOLUME_TRIGGER_ENABLED, true);
-    }
-
     // Audio Methods
     public void saveAudioMessagePath(String path) {
         sharedPreferences.edit().putString(KEY_AUDIO_MESSAGE_PATH, path).apply();
@@ -399,6 +364,26 @@ public class TriggerManager {
         if (json == null) return new ArrayList<>();
         Type type = new TypeToken<ArrayList<SosHistoryEntry>>() {}.getType();
         return gson.fromJson(json, type);
+    }
+
+    public void clearSosHistory() {
+        sharedPreferences.edit().remove(KEY_SOS_HISTORY).apply();
+    }
+
+    public void removeSosHistoryEntry(String entryId) {
+        List<SosHistoryEntry> history = getSosHistory();
+        boolean removed = false;
+        for (int i = 0; i < history.size(); i++) {
+            if (history.get(i).getId().equals(entryId)) {
+                history.remove(i);
+                removed = true;
+                break;
+            }
+        }
+        if (removed) {
+            String json = gson.toJson(history);
+            sharedPreferences.edit().putString(KEY_SOS_HISTORY, json).apply();
+        }
     }
 
     public void clearData() {

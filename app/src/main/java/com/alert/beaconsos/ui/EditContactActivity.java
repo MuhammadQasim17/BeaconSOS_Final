@@ -163,16 +163,31 @@ public class EditContactActivity extends BaseActivity {
         contactUpdates.put("phoneNumber", phone);
         contactUpdates.put("relation", relation);
 
+        // Update in "contacts" collection
         db.collection("users").document(userId).collection("contacts").document(contactId).update(contactUpdates)
             .addOnSuccessListener(aVoid -> {
-                hideLoading();
-                Toast.makeText(EditContactActivity.this, "Contact updated successfully!", Toast.LENGTH_SHORT).show();
-                finish();
+                // Also attempt to update in "sos_recipients" if it exists there
+                db.collection("users").document(userId).collection("sos_recipients").document(contactId)
+                    .get().addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            db.collection("users").document(userId).collection("sos_recipients").document(contactId)
+                                .update(contactUpdates)
+                                .addOnCompleteListener(task -> finalizeUpdate());
+                        } else {
+                            finalizeUpdate();
+                        }
+                    }).addOnFailureListener(e -> finalizeUpdate());
             })
             .addOnFailureListener(e -> {
                 hideLoading();
                 Log.e(TAG, "Update failed", e);
                 Toast.makeText(EditContactActivity.this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
             });
+    }
+
+    private void finalizeUpdate() {
+        hideLoading();
+        Toast.makeText(EditContactActivity.this, "Contact updated successfully!", Toast.LENGTH_SHORT).show();
+        finish();
     }
 }

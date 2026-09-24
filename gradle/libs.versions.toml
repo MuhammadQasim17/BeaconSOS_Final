@@ -20,6 +20,7 @@ composeBom = "2024.06.00"
 activityCompose = "1.9.0"
 lifecycleViewmodelCompose = "2.8.2"
 coilCompose = "2.6.0"
+imageCropper = "4.5.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +58,7 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 junit = { group = "junit", name = "junit", version = "4.13.2" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.1.5" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version = "3.5.1" }
+image-cropper = { group = "com.github.CanHub", name = "Android-Image-Cropper", version.ref = "imageCropper" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
