@@ -15,7 +15,7 @@ if (localPropertiesFile.exists()) {
         localProperties.load(stream)
     }
 }
-val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY") ?: "AIzaSyCESXL8fPZmZbylwAxBiJQM0Tk-mzqKtPg"
+val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY") ?: ""
 
 android {
     namespace = "com.alert.beaconsos"
