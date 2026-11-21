@@ -4,38 +4,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/vibrant_gradient_bg">
+    android:fitsSystemWindows="true"
+    android:background="@color/color_background">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbarBlocked"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_marginTop="16dp"
-        android:background="@android:color/transparent"
-        app:title="Blocked Contacts"
-        app:titleTextColor="@color/white"
-        app:navigationIcon="@drawable/ic_back_custom"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="wrap_content"
+        android:background="@color/color_surface"
+        app:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarBlocked"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Blocked Contacts"
+            app:titleCentered="true"
+            app:titleTextColor="@color/white"
+            app:navigationIcon="@drawable/ic_back_white" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvBlockedContacts"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="8dp"
+        android:padding="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarBlocked" />
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout" />
 
     <TextView
         android:id="@+id/tvNoBlocked"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="No blocked contacts"
-        android:textColor="@color/white"
+        android:textColor="@color/text_hint"
         android:textSize="16sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarBlocked" />
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

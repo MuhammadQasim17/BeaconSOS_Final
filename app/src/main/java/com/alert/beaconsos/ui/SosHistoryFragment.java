@@ -17,8 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.SosHistoryEntry;
 import com.alert.beaconsos.data.TriggerManager;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -56,7 +59,28 @@ public class SosHistoryFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        syncHistoryFromCloud();
         loadHistory();
+    }
+
+    private void syncHistoryFromCloud() {
+        if (triggerManager == null) return;
+        String uid = triggerManager.getUserId();
+        if (uid == null || uid.isEmpty()) return;
+
+        FirebaseFirestore.getInstance().collection("users").document(uid).collection("sos_history")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                        List<SosHistoryEntry> history = new ArrayList<>();
+                        for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                            SosHistoryEntry entry = doc.toObject(SosHistoryEntry.class);
+                            if (entry != null) history.add(entry);
+                        }
+                        triggerManager.saveSosHistory(history);
+                        loadHistory();
+                    }
+                });
     }
 
     private void loadHistory() {

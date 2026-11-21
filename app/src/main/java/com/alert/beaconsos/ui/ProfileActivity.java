@@ -103,6 +103,7 @@ public class ProfileActivity extends BaseActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
             animateNavIconPulse(itemId);
+            updateBottomNavProfileIcon(bottomNavigationView);
             
             if (itemId == R.id.nav_home) {
                 Intent intent = new Intent(this, MainActivity.class);
@@ -160,19 +161,21 @@ public class ProfileActivity extends BaseActivity {
         String imageUriString = triggerManager.getProfileImageUri();
         if (ivProfilePic != null) {
             if (imageUriString != null && !imageUriString.isEmpty()) {
+                ivProfilePic.setPadding(0, 0, 0, 0);
+                ivProfilePic.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Glide.with(this)
                         .load(imageUriString)
-                        .placeholder(R.drawable.ic_user_fallback)
-                        .error(R.drawable.ic_user_fallback)
+                        .placeholder(R.drawable.ic_user_avatar_default)
+                        .error(R.drawable.ic_user_avatar_default)
                         .centerCrop()
                         .override(512, 512)
                         .into(ivProfilePic);
                 ivProfilePic.setImageTintList(null);
             } else {
-                ivProfilePic.setImageResource(R.drawable.ic_user_fallback);
+                ivProfilePic.setImageResource(R.drawable.ic_user_avatar_default);
                 ivProfilePic.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                ivProfilePic.setImageTintList(android.content.res.ColorStateList.valueOf(
-                        androidx.core.content.ContextCompat.getColor(this, R.color.text_secondary)));
+                ivProfilePic.setPadding(0, 0, 0, 0);
+                ivProfilePic.setImageTintList(null);
             }
         }
     }

@@ -87,17 +87,14 @@ public class EditProfileActivity extends BaseActivity {
         cropImageOptions.aspectRatioX = 1;
         cropImageOptions.aspectRatioY = 1;
         
-        // Brand styling
-        cropImageOptions.toolbarColor = ContextCompat.getColor(this, R.color.primary_blue);
+        cropImageOptions.toolbarColor = ContextCompat.getColor(this, R.color.color_primary);
         cropImageOptions.toolbarTitleColor = ContextCompat.getColor(this, R.color.white);
         cropImageOptions.activityMenuIconColor = ContextCompat.getColor(this, R.color.white);
         
-        // Navigation & Confirmation
         cropImageOptions.activityTitle = "Crop Photo";
         cropImageOptions.cropMenuCropButtonTitle = "DONE";
         cropImageOptions.cropMenuCropButtonIcon = R.drawable.ic_tick_single;
         
-        // Enable additional controls to ensure the menu is visible
         cropImageOptions.allowRotation = true;
         cropImageOptions.allowFlipping = true;
         cropImageOptions.showCropOverlay = true;
@@ -178,9 +175,12 @@ public class EditProfileActivity extends BaseActivity {
                     .addOnSuccessListener(v -> {
                         hideLoading();
                         triggerManager.saveProfileImageUri("");
-                        ivEditProfilePic.setImageResource(R.drawable.ic_user_fallback);
-                        ivEditProfilePic.setImageTintList(android.content.res.ColorStateList.valueOf(
-                                ContextCompat.getColor(EditProfileActivity.this, R.color.text_secondary)));
+                        if (ivEditProfilePic != null) {
+                            ivEditProfilePic.setImageResource(R.drawable.ic_user_avatar_default);
+                            ivEditProfilePic.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                            ivEditProfilePic.setPadding(0, 0, 0, 0);
+                            ivEditProfilePic.setImageTintList(null);
+                        }
                         Toast.makeText(EditProfileActivity.this, "Photo removed successfully!", Toast.LENGTH_SHORT).show();
                     });
             })
@@ -212,19 +212,21 @@ public class EditProfileActivity extends BaseActivity {
         String imageUriString = triggerManager.getProfileImageUri();
         if (ivEditProfilePic != null) {
             if (imageUriString != null && !imageUriString.isEmpty()) {
+                ivEditProfilePic.setPadding(0, 0, 0, 0);
+                ivEditProfilePic.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Glide.with(this)
                         .load(imageUriString)
-                        .placeholder(R.drawable.ic_user_fallback)
-                        .error(R.drawable.ic_user_fallback)
+                        .placeholder(R.drawable.ic_user_avatar_default)
+                        .error(R.drawable.ic_user_avatar_default)
                         .centerCrop()
                         .override(512, 512)
                         .into(ivEditProfilePic);
                 ivEditProfilePic.setImageTintList(null);
             } else {
-                ivEditProfilePic.setImageResource(R.drawable.ic_user_fallback);
+                ivEditProfilePic.setImageResource(R.drawable.ic_user_avatar_default);
                 ivEditProfilePic.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                ivEditProfilePic.setImageTintList(android.content.res.ColorStateList.valueOf(
-                        ContextCompat.getColor(this, R.color.text_secondary)));
+                ivEditProfilePic.setPadding(0, 0, 0, 0);
+                ivEditProfilePic.setImageTintList(null);
             }
         }
     }
@@ -242,7 +244,6 @@ public class EditProfileActivity extends BaseActivity {
 
         new Thread(() -> {
             try {
-                // 1. Load and compress image
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
                 Bitmap originalBitmap = BitmapFactory.decodeStream(inputStream);
                 if (inputStream != null) inputStream.close();
@@ -255,7 +256,6 @@ public class EditProfileActivity extends BaseActivity {
                     return;
                 }
 
-                // Resize to max 512x512 to ensure sharpness across all screens
                 int width = originalBitmap.getWidth();
                 int height = originalBitmap.getHeight();
                 float ratio = (float) width / (float) height;
@@ -268,14 +268,12 @@ public class EditProfileActivity extends BaseActivity {
 
                 Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
                 
-                // 2. Convert to Base64
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream);
                 byte[] byteArray = outputStream.toByteArray();
                 String base64Image = Base64.encodeToString(byteArray, Base64.DEFAULT);
                 String finalBase64 = "data:image/jpeg;base64," + base64Image;
 
-                // 3. Save to Firebase
                 runOnUiThread(() -> {
                     showLoading("Updating Profile Photo");
                     
@@ -288,17 +286,22 @@ public class EditProfileActivity extends BaseActivity {
                                 .addOnSuccessListener(v -> {
                                     hideLoading();
                                     triggerManager.saveProfileImageUri(finalBase64);
-                                    Glide.with(EditProfileActivity.this)
-                                        .load(finalBase64)
-                                        .centerCrop()
-                                        .into(ivEditProfilePic);
+                                    if (ivEditProfilePic != null) {
+                                        ivEditProfilePic.setPadding(0, 0, 0, 0);
+                                        ivEditProfilePic.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                        ivEditProfilePic.setImageTintList(null);
+                                        Glide.with(EditProfileActivity.this)
+                                            .load(finalBase64)
+                                            .centerCrop()
+                                            .into(ivEditProfilePic);
+                                    }
                                     Toast.makeText(EditProfileActivity.this, "Photo updated successfully!", Toast.LENGTH_SHORT).show();
                                 });
                         })
                         .addOnFailureListener(e -> {
                             hideLoading();
-                            Log.e(TAG, "Update failed", e);
-                            Toast.makeText(EditProfileActivity.this, "Update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Delete failed", e);
+                            Toast.makeText(EditProfileActivity.this, "Failed to update photo", Toast.LENGTH_SHORT).show();
                         });
                 });
 
@@ -328,11 +331,9 @@ public class EditProfileActivity extends BaseActivity {
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", name);
 
-        // Update Firestore
         db.collection("users").document(userId).set(updates, SetOptions.merge())
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    // Update Realtime Database
                     mDatabase.child("users").child(userId).updateChildren(updates)
                         .addOnCompleteListener(rtdTask -> {
                             hideLoading();

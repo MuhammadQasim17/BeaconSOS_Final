@@ -7,6 +7,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
@@ -15,6 +16,7 @@ import androidx.core.os.LocaleListCompat;
 import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.TriggerManager;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException;
 import com.google.firebase.auth.FirebaseUser;
@@ -48,13 +50,20 @@ public class SettingsActivity extends BaseActivity {
         swShakeTrigger = findViewById(R.id.swShakeTrigger);
         btnDeleteAccount = findViewById(R.id.btnDeleteAccount);
 
-        // Setup Shake Trigger Toggle
         swShakeTrigger.setChecked(triggerManager.isShakeTriggerEnabled());
         swShakeTrigger.setOnCheckedChangeListener((buttonView, isChecked) -> {
             triggerManager.setShakeTriggerEnabled(isChecked);
+            String userId = triggerManager.getUserId();
+            if (userId != null && !userId.isEmpty()) {
+                java.util.Map<String, Object> updates = new java.util.HashMap<>();
+                updates.put("shakeTriggerEnabled", isChecked);
+                com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(userId)
+                        .set(updates, com.google.firebase.firestore.SetOptions.merge());
+                com.google.firebase.database.FirebaseDatabase.getInstance().getReference("users").child(userId)
+                        .child("shakeTriggerEnabled").setValue(isChecked);
+            }
         });
 
-        // Setup Delete Account Button
         btnDeleteAccount.setOnClickListener(v -> {
             showGlassyConfirmDialog(
                     getString(R.string.delete_account_confirm_title),
@@ -64,7 +73,6 @@ public class SettingsActivity extends BaseActivity {
             );
         });
 
-        // Setup Theme Mode UI from Saved Preference
         int savedMode = triggerManager.getThemeMode();
         if (savedMode == 1) {
             rgThemeMode.check(R.id.rbLightMode);
@@ -80,59 +88,60 @@ public class SettingsActivity extends BaseActivity {
                 if (currentMode != 2) {
                     triggerManager.saveThemeMode(2);
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                    recreate();
+                    smoothRecreate();
                 }
             } else if (checkedId == R.id.rbLightMode) {
                 if (currentMode != 1) {
                     triggerManager.saveThemeMode(1);
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                    recreate();
+                    smoothRecreate();
                 }
             } else if (checkedId == R.id.rbSystemMode) {
                 if (currentMode != 0) {
                     triggerManager.saveThemeMode(0);
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                    recreate();
+                    smoothRecreate();
                 }
             }
         });
 
-        // Setup Modern Language Dropdown
         setupLanguageDropdown();
+    }
+
+    private void smoothRecreate() {
+        overridePendingTransition(0, 0);
+        finish();
+        overridePendingTransition(0, 0);
+        startActivity(getIntent());
+        overridePendingTransition(0, 0);
     }
 
     private void setupLanguageDropdown() {
         String[] languages = {"English", "Urdu", "Spanish", "Russian", "Chinese", "Japanese", "Arabic"};
-        // Use custom glassy layout for dropdown items
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_dropdown_glassy, languages);
-        languageDropdown.setAdapter(adapter);
+        if (languageDropdown instanceof MaterialAutoCompleteTextView) {
+            ((MaterialAutoCompleteTextView) languageDropdown).setSimpleItems(languages);
+        } else {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_dropdown_glassy, languages);
+            languageDropdown.setAdapter(adapter);
+        }
 
-        // Set current selection
         String currentLang = triggerManager.getLanguage();
         languageDropdown.setText(currentLang, false);
 
         languageDropdown.setOnItemClickListener((parent, view, position, id) -> {
             String selectedLang = (String) parent.getItemAtPosition(position);
+            languageDropdown.dismissDropDown();
+            languageDropdown.clearFocus();
             if (!selectedLang.equals(triggerManager.getLanguage())) {
                 triggerManager.saveLanguage(selectedLang);
                 updateAppLocale(selectedLang);
             }
         });
-        
-        // Fix for filtering: clear filter on focus or click to show all options
-        languageDropdown.setOnClickListener(v -> languageDropdown.showDropDown());
-        languageDropdown.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) languageDropdown.showDropDown();
-        });
-        
-        // Ensure the popup background also has a glassy look (optional, depends on theme)
-        languageDropdown.setDropDownBackgroundResource(R.drawable.glass_tag_bg);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Reset adapter on resume to prevent filtering issues after language change/recreation
         setupLanguageDropdown();
     }
 
@@ -149,6 +158,7 @@ public class SettingsActivity extends BaseActivity {
 
         LocaleListCompat appLocale = LocaleListCompat.forLanguageTags(langCode);
         AppCompatDelegate.setApplicationLocales(appLocale);
+        smoothRecreate();
     }
 
     private void handleDeleteAccount() {
@@ -160,17 +170,13 @@ public class SettingsActivity extends BaseActivity {
 
         String userId = user.getUid();
         
-        // Use a flag to ensure we don't try to delete twice if something hangs
         btnDeleteAccount.setEnabled(false);
         Toast.makeText(this, "Deleting account...", Toast.LENGTH_SHORT).show();
 
-        // 1. Delete user data from Realtime Database first
         FirebaseDatabase.getInstance().getReference("users").child(userId).removeValue()
                 .addOnCompleteListener(dbTask -> {
-                    // 2. Now delete the Auth record
                     user.delete().addOnCompleteListener(authTask -> {
                         if (authTask.isSuccessful()) {
-                            // 3. Clear local data and redirect
                             triggerManager.clearData();
                             Toast.makeText(this, R.string.msg_account_deleted, Toast.LENGTH_LONG).show();
                             
@@ -181,7 +187,6 @@ public class SettingsActivity extends BaseActivity {
                         } else {
                             btnDeleteAccount.setEnabled(true);
                             if (authTask.getException() instanceof FirebaseAuthRecentLoginRequiredException) {
-                                // This is common. Firebase requires a fresh login for security.
                                 showErrorDialog("Security Requirement", getString(R.string.msg_reauth_required));
                             } else {
                                 String error = authTask.getException() != null ? authTask.getException().getMessage() : "Deletion failed";
@@ -192,16 +197,20 @@ public class SettingsActivity extends BaseActivity {
                 });
     }
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void showErrorDialog(String title, String message) {
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", null)
                 .show();
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
     }
 }

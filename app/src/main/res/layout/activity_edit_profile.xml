@@ -1,36 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/vibrant_gradient_bg">
+    android:fitsSystemWindows="true"
+    android:background="@color/color_background"
+    tools:context=".ui.EditProfileActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_marginTop="16dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title="Edit Profile"
-        app:titleTextColor="@color/white"
-        app:navigationIcon="@drawable/ic_back_custom" />
+        android:layout_height="wrap_content"
+        android:background="@color/color_surface"
+        app:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Edit Profile"
+            app:titleCentered="true"
+            app:titleTextColor="@color/color_on_surface"
+            app:navigationIcon="@drawable/ic_back_white"
+            app:navigationIconTint="@color/color_on_surface" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:scrollbars="none"
         android:fillViewport="true"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar">
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="20dp">
 
-            <!-- Profile Picture Section with Frame -->
+            <!-- Profile Picture Section with Instagram Style Avatar -->
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -38,20 +50,21 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/profileFrame"
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
-                    app:cardCornerRadius="75dp"
-                    app:cardElevation="8dp"
-                    app:cardBackgroundColor="@color/white"
-                    app:strokeWidth="0dp">
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    app:cardCornerRadius="60dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@color/color_surface"
+                    app:strokeColor="@color/color_primary"
+                    app:strokeWidth="2dp">
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/ivEditProfilePic"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_margin="3dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/ic_profile_new"
+                        android:padding="0dp"
+                        android:src="@drawable/ic_user_avatar_default"
                         app:shapeAppearanceOverlay="@style/CircleImage" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -61,15 +74,15 @@
                     android:layout_height="wrap_content"
                     android:layout_alignBottom="@id/profileFrame"
                     android:layout_alignEnd="@id/profileFrame"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginBottom="4dp"
-                    app:fabCustomSize="44dp"
-                    app:elevation="12dp"
-                    app:pressedTranslationZ="16dp"
-                    app:srcCompat="@android:drawable/ic_menu_camera"
-                    app:tint="@color/primary_blue"
-                    app:backgroundTint="@color/white"
-                    app:borderWidth="0dp" />
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    app:fabCustomSize="38dp"
+                    app:elevation="6dp"
+                    app:srcCompat="@drawable/ic_camera_white"
+                    app:tint="@color/white"
+                    app:backgroundTint="@color/color_primary"
+                    app:borderWidth="2dp"
+                    android:contentDescription="Change Profile Photo" />
             </RelativeLayout>
 
             <TextView
@@ -77,48 +90,48 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Edit Your Profile"
-                android:textColor="@color/white"
-                android:textSize="22sp"
+                android:textColor="@color/color_on_surface"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <!-- Editing Boxes Card -->
+            <!-- Editing Card Section -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#33FFFFFF"
-                app:strokeColor="#33FFFFFF"
+                android:layout_marginTop="24dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/color_surface"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:padding="20dp">
 
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Full Name"
-                        app:startIconDrawable="@android:drawable/ic_menu_myplaces"
-                        app:boxBackgroundColor="#33FFFFFF"
-                        app:boxStrokeColor="@color/white"
-                        app:hintTextColor="@color/white"
-                        app:startIconTint="@color/white"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        app:boxBackgroundMode="outline"
+                        app:boxBackgroundColor="@color/color_surface"
+                        app:boxStrokeColor="@color/border_color"
+                        app:boxStrokeWidth="1.5dp"
+                        app:boxStrokeWidthFocused="2dp"
+                        app:startIconDrawable="@drawable/ic_nav_profile"
+                        app:startIconTint="@color/color_primary"
+                        app:hintTextColor="@color/color_primary"
+                        android:textColorHint="@color/text_hint">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEditName"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/white"
-                            android:textColorHint="#CCFFFFFF"
+                            android:layout_height="56dp"
+                            android:textColor="@color/color_on_surface"
+                            android:background="@android:color/transparent"
                             android:inputType="textPersonName" />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -128,15 +141,15 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveProfile"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="40dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="28dp"
                 android:text="SAVE CHANGES"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                app:cornerRadius="30dp"
-                android:backgroundTint="@color/white"
-                android:textColor="#1E88E5"
-                app:elevation="0dp" />
+                app:cornerRadius="12dp"
+                android:backgroundTint="@color/color_primary"
+                android:textColor="@color/white"
+                app:elevation="4dp" />
 
         </LinearLayout>
     </ScrollView>

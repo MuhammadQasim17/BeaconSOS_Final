@@ -21,7 +21,7 @@ import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.TriggerManager;
 import com.alert.beaconsos.services.BeaconService;
 
-public class PermissionsActivity extends AppCompatActivity {
+public class PermissionsActivity extends BaseActivity {
 
     private SwitchCompat swMic, swLoc, swSms, swNotif, swCam;
     private Button btnOpenSettings;

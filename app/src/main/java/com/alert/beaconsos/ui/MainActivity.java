@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
+import android.widget.Toast;
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
@@ -27,8 +29,13 @@ import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.TriggerManager;
 import com.alert.beaconsos.services.BeaconService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends BaseActivity {
 
@@ -40,6 +47,10 @@ public class MainActivity extends BaseActivity {
     private boolean isNavigatingProgrammatically = false;
     private DatabaseReference userPresenceRef;
     private ConnectivityManager.NetworkCallback networkCallback;
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener authStateListener;
+    private ValueEventListener userCheckListener;
+    private DatabaseReference userCheckRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +77,13 @@ public class MainActivity extends BaseActivity {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         onlineStatusDot = findViewById(R.id.onlineStatusDot);
 
-        // Handle Window Insets for both 3-button and gesture navigation
+        // Handle Window Insets for top status bar and bottom navigation bar
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_content), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0);
+            return insets;
+        });
+
         int basePaddingBottom = bottomNavigationView.getPaddingBottom();
         ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -87,6 +104,7 @@ public class MainActivity extends BaseActivity {
                 viewPager.setCurrentItem(position, false);
             }
             animateNavIconPulse(item.getItemId());
+            updateBottomNavProfileIcon(bottomNavigationView);
             return true;
         });
 
@@ -102,6 +120,7 @@ public class MainActivity extends BaseActivity {
                 if (bottomNavigationView.getSelectedItemId() != itemId) {
                     bottomNavigationView.setSelectedItemId(itemId);
                 }
+                updateBottomNavProfileIcon(bottomNavigationView);
             }
         });
 
@@ -133,6 +152,50 @@ public class MainActivity extends BaseActivity {
             userPresenceRef.setValue(true);
             userPresenceRef.onDisconnect().setValue(false);
         }
+
+        setupAccountValidationListener();
+    }
+
+    private void setupAccountValidationListener() {
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            forceLogoutAndRedirect();
+            return;
+        }
+
+        authStateListener = firebaseAuth -> {
+            if (firebaseAuth.getCurrentUser() == null) {
+                forceLogoutAndRedirect();
+            }
+        };
+        mAuth.addAuthStateListener(authStateListener);
+
+        String uid = currentUser.getUid();
+        userCheckRef = FirebaseDatabase.getInstance().getReference("users").child(uid);
+        userCheckListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    forceLogoutAndRedirect();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        };
+        userCheckRef.addValueEventListener(userCheckListener);
+    }
+
+    private void forceLogoutAndRedirect() {
+        if (isFinishing() || isDestroyed()) return;
+        if (mAuth != null) mAuth.signOut();
+        triggerManager.clearData();
+        Toast.makeText(this, "Session expired or account removed.", Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     @Override
@@ -155,6 +218,12 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (mAuth != null && authStateListener != null) {
+            mAuth.removeAuthStateListener(authStateListener);
+        }
+        if (userCheckRef != null && userCheckListener != null) {
+            userCheckRef.removeEventListener(userCheckListener);
+        }
         if (networkCallback != null) {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             if (cm != null) cm.unregisterNetworkCallback(networkCallback);

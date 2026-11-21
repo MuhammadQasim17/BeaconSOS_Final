@@ -4,37 +4,69 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:background="@color/color_background">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/color_primary"
-        app:elevation="4dp"
+        android:background="@color/color_surface"
+        app:elevation="2dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/title_trusted_contacts"
-            app:titleTextColor="@color/white"
-            app:navigationIcon="@drawable/ic_back_white" />
+            app:title="Trusted Contacts"
+            app:titleCentered="true"
+            app:titleTextColor="@color/color_on_surface"
+            app:navigationIcon="@drawable/ic_back_white"
+            app:navigationIconTint="@color/color_on_surface" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <TextView
-        android:id="@+id/tvListTitle"
-        android:layout_width="wrap_content"
+    <!-- List Title & Clear All Header Bar -->
+    <RelativeLayout
+        android:id="@+id/layoutListHeader"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
         android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:text="@string/label_your_trusted_contacts"
-        android:textStyle="bold"
-        android:textColor="@color/color_on_surface"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/appBarLayout"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout">
+
+        <TextView
+            android:id="@+id/tvListTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/btnClearAllContacts"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:text="@string/label_your_trusted_contacts"
+            android:textStyle="bold"
+            android:textColor="@color/color_on_surface"
+            android:textSize="18sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClearAllContacts"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="0dp"
+            android:text="CLEAR ALL"
+            android:textColor="@color/color_primary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:strokeColor="@color/color_primary"
+            app:strokeWidth="1dp"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_delete_new"
+            app:iconTint="@color/color_primary"
+            app:iconSize="14dp" />
+    </RelativeLayout>
 
     <!-- Empty State -->
     <LinearLayout
@@ -45,14 +77,14 @@
         android:gravity="center"
         android:padding="32dp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/tvListTitle"
+        app:layout_constraintTop_toBottomOf="@id/layoutListHeader"
         app:layout_constraintBottom_toTopOf="@id/cardAddContact">
 
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@drawable/ic_nav_profile"
-            app:tint="@color/color_secondary"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:src="@drawable/ic_contacts_user"
+            app:tint="@color/color_primary"
             android:contentDescription="@string/cd_empty_contacts" />
 
         <TextView
@@ -81,8 +113,11 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/tvListTitle"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/layoutListHeader"
         app:layout_constraintBottom_toTopOf="@id/cardAddContact" />
 
     <com.google.android.material.card.MaterialCardView
@@ -92,80 +127,151 @@
         android:layout_margin="16dp"
         android:visibility="gone"
         app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
+        app:cardElevation="6dp"
         app:cardBackgroundColor="@color/color_surface"
-        app:strokeColor="@color/color_outline"
-        app:strokeWidth="1dp"
+        app:strokeColor="@color/border_color"
+        app:strokeWidth="1.5dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
-            <Button
+            <!-- Card Header with Close Icon -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="Add New Contact"
+                    android:textColor="@color/color_on_surface"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/btnCloseAddCard"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="2dp"
+                    android:src="@drawable/ic_cross_red"
+                    app:tint="@color/color_primary"
+                    android:contentDescription="Close Card" />
+            </RelativeLayout>
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPickContact"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:text="@string/btn_pick_from_contacts"
-                android:layout_marginBottom="12dp"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                app:cornerRadius="12dp"
                 android:textColor="@color/color_primary"
+                android:textStyle="bold"
                 app:strokeColor="@color/color_primary"
-                app:icon="@android:drawable/ic_menu_search"
-                app:iconTint="@color/color_primary" />
+                app:strokeWidth="1.5dp"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_search_red"
+                app:iconTint="@color/color_primary"
+                android:layout_marginBottom="14dp" />
 
+            <!-- Contact Name Field -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                android:hint="@string/hint_contact_name"
+                app:boxBackgroundColor="@color/color_surface"
+                app:boxStrokeColor="@color/input_box_stroke"
+                app:boxStrokeWidth="1.5dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:hintTextColor="@color/color_primary"
+                android:textColorHint="@color/text_hint"
+                android:layout_marginBottom="12dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etNewContactName"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_contact_name"
+                    android:layout_height="52dp"
                     android:textColor="@color/color_on_surface"
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Phone Number Field -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                android:hint="@string/hint_phone_number"
+                app:boxBackgroundColor="@color/color_surface"
+                app:boxStrokeColor="@color/input_box_stroke"
+                app:boxStrokeWidth="1.5dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:hintTextColor="@color/color_primary"
+                android:textColorHint="@color/text_hint"
+                android:layout_marginBottom="12dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etNewPhoneNumber"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_phone_number"
+                    android:layout_height="52dp"
                     android:textColor="@color/color_on_surface"
                     android:inputType="phone" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Relation Field -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+                android:hint="@string/hint_relation"
+                app:boxBackgroundColor="@color/color_surface"
+                app:boxStrokeColor="@color/input_box_stroke"
+                app:boxStrokeWidth="1.5dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:hintTextColor="@color/color_primary"
+                android:textColorHint="@color/text_hint"
+                android:layout_marginBottom="16dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etNewRelation"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_relation"
+                    android:layout_height="52dp"
                     android:textColor="@color/color_on_surface"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddContact"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:layout_marginTop="16dp"
                 android:text="@string/btn_save_contact"
-                android:backgroundTint="@color/color_primary"
                 android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                app:backgroundTint="@color/color_primary"
+                app:elevation="4dp"
                 app:cornerRadius="12dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -181,8 +287,8 @@
         android:id="@+id/btnToggleAddContact"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="36dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="24dp"
         android:contentDescription="@string/btn_add_trusted_contact"
         android:src="@android:drawable/ic_input_add"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -4,14 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_background">
+    android:fitsSystemWindows="true"
+    android:background="@color/color_background"
+    tools:context=".ui.SettingsActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/color_primary"
-        app:elevation="4dp"
+        android:background="@color/color_surface"
+        app:elevation="2dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
@@ -19,13 +21,16 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/settings_title"
-            app:titleTextColor="@color/white"
-            app:navigationIcon="@drawable/ic_back_white" />
+            app:titleCentered="true"
+            app:titleTextColor="@color/color_on_surface"
+            app:navigationIcon="@drawable/ic_back_white"
+            app:navigationIconTint="@color/color_on_surface" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:scrollbars="none"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/appBarLayout"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -34,16 +39,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="20dp">
 
+            <!-- General Preferences Section Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/color_surface"
-                app:strokeColor="@color/color_outline"
-                app:strokeWidth="1dp">
+                app:strokeColor="@color/border_color"
+                app:strokeWidth="1.5dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -70,11 +76,12 @@
                                 android:text="@string/shake_sos_title"
                                 android:textColor="@color/color_on_surface"
                                 android:textStyle="bold"
-                                android:textSize="18sp" />
+                                android:textSize="17sp" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
                                 android:text="@string/shake_sos_desc"
                                 android:textColor="@color/color_on_surface_variant"
                                 android:textSize="12sp" />
@@ -85,14 +92,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             app:thumbTint="@color/color_primary"
-                            app:trackTint="@color/sky_blue" />
+                            app:trackTint="@color/border_color" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginVertical="20dp"
-                        android:background="@color/color_outline" />
+                        android:background="@color/border_color" />
 
                     <TextView
                         android:id="@+id/tvModeLabel"
@@ -101,8 +108,9 @@
                         android:text="@string/settings_theme_mode"
                         android:textColor="@color/color_on_surface"
                         android:textStyle="bold"
-                        android:textSize="18sp" />
+                        android:textSize="17sp" />
 
+                    <!-- High-Contrast Display Mode Radio Buttons -->
                     <RadioGroup
                         android:id="@+id/rgThemeMode"
                         android:layout_width="match_parent"
@@ -113,30 +121,36 @@
                         <RadioButton
                             android:id="@+id/rbSystemMode"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="48dp"
                             android:text="@string/theme_system"
-                            android:textColor="@color/color_on_surface" />
+                            android:textColor="@color/color_on_surface"
+                            android:textSize="15sp"
+                            app:buttonTint="@color/color_primary" />
 
                         <RadioButton
                             android:id="@+id/rbLightMode"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="48dp"
                             android:text="@string/theme_light"
-                            android:textColor="@color/color_on_surface" />
+                            android:textColor="@color/color_on_surface"
+                            android:textSize="15sp"
+                            app:buttonTint="@color/color_primary" />
 
                         <RadioButton
                             android:id="@+id/rbDarkMode"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="48dp"
                             android:text="@string/theme_dark"
-                            android:textColor="@color/color_on_surface" />
+                            android:textColor="@color/color_on_surface"
+                            android:textSize="15sp"
+                            app:buttonTint="@color/color_primary" />
                     </RadioGroup>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginVertical="24dp"
-                        android:background="@color/color_outline" />
+                        android:layout_marginVertical="20dp"
+                        android:background="@color/border_color" />
 
                     <TextView
                         android:id="@+id/tvLanguageLabel"
@@ -145,7 +159,7 @@
                         android:text="@string/settings_language"
                         android:textColor="@color/color_on_surface"
                         android:textStyle="bold"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:layout_marginBottom="12dp" />
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -154,18 +168,26 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Select Language"
-                        app:startIconDrawable="@android:drawable/ic_menu_sort_by_size"
+                        app:startIconDrawable="@drawable/ic_language_globe"
+                        app:startIconTint="@color/color_primary"
+                        app:boxBackgroundColor="@color/color_surface"
+                        app:boxStrokeColor="@color/input_box_stroke"
+                        app:boxStrokeWidth="1.5dp"
+                        app:boxStrokeWidthFocused="2dp"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusBottomEnd="12dp">
+                        app:boxCornerRadiusBottomEnd="12dp"
+                        app:endIconTint="@color/color_primary"
+                        app:hintTextColor="@color/color_primary"
+                        android:textColorHint="@color/text_hint">
 
                         <com.google.android.material.textfield.MaterialAutoCompleteTextView
                             android:id="@+id/languageDropdown"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="56dp"
                             android:inputType="none"
-                            android:padding="16dp"
+                            android:paddingHorizontal="16dp"
                             android:textSize="14sp"
                             android:saveEnabled="false"
                             android:textColor="@color/color_on_surface" />
@@ -174,6 +196,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Danger Zone: Account Deletion Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -181,8 +204,8 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:cardBackgroundColor="@color/color_surface"
-                app:strokeColor="@color/color_error"
-                app:strokeWidth="1dp">
+                app:strokeColor="@color/color_primary"
+                app:strokeWidth="1.5dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -194,9 +217,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/delete_account"
-                        android:textColor="@color/color_error"
+                        android:textColor="@color/color_primary"
                         android:textStyle="bold"
-                        android:textSize="18sp" />
+                        android:textSize="17sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -213,13 +236,23 @@
                         android:layout_height="52dp"
                         android:layout_marginTop="16dp"
                         android:text="@string/btn_delete"
-                        android:textColor="@color/color_error"
-                        app:strokeColor="@color/color_error" />
+                        android:textColor="@color/color_primary"
+                        android:textStyle="bold"
+                        app:strokeColor="@color/color_primary"
+                        app:strokeWidth="1.5dp"
+                        app:cornerRadius="12dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </ScrollView>
+
+    <include
+        layout="@layout/layout_app_loading"
+        android:id="@+id/customLoading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

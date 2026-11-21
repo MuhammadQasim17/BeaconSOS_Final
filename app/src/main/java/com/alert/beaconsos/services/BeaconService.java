@@ -108,7 +108,11 @@ public class BeaconService extends Service implements AudioDetector.OnTriggerDet
             if (!wakeLock.isHeld()) wakeLock.acquire(10 * 60 * 60 * 1000L); // High-persistence lock
         }
 
-        registerReceiver(callReceiver, new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(callReceiver, new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED), Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(callReceiver, new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED));
+        }
         
         getSharedPreferences("BeaconSOSPrefs", Context.MODE_PRIVATE).registerOnSharedPreferenceChangeListener(prefListener);
         audioDetector = new AudioDetector(this, this);
@@ -133,10 +137,20 @@ public class BeaconService extends Service implements AudioDetector.OnTriggerDet
                 .setOngoing(true).build();
 
         try {
-            int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE | ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) startForeground(1, notification, type);
-            else startForeground(1, notification);
-        } catch (Exception e) { startForeground(1, notification); }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE | ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
+                startForeground(1, notification, type);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                int type = ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
+                startForeground(1, notification, type);
+            } else {
+                startForeground(1, notification);
+            }
+        } catch (Exception e) {
+            try {
+                startForeground(1, notification);
+            } catch (Exception ignored) {}
+        }
         
         checkAndStartMic();
         mSensorManager.registerListener(mShakeDetector, mAccelerometer, SensorManager.SENSOR_DELAY_UI);

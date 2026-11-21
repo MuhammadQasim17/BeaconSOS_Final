@@ -1,50 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/vibrant_gradient_bg">
+    android:fitsSystemWindows="true"
+    android:background="@color/color_background"
+    tools:context=".ui.PermissionsActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbarPermissions"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_marginTop="16dp"
-        android:background="@android:color/transparent"
-        app:title="App Permissions"
-        app:titleTextColor="@android:color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="@drawable/ic_back_custom" />
+        android:layout_height="wrap_content"
+        android:background="@color/color_surface"
+        app:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarPermissions"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="App Permissions"
+            app:titleCentered="true"
+            app:titleTextColor="@color/color_on_surface"
+            app:navigationIcon="@drawable/ic_back_white"
+            app:navigationIconTint="@color/color_on_surface" />
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/btnOpenSettings"
-        app:layout_constraintTop_toBottomOf="@id/toolbarPermissions">
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Beacon SOS requires the following permissions to function correctly during emergencies."
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:layout_marginBottom="24dp" />
+                android:textSize="13sp"
+                android:textColor="@color/color_on_surface_variant"
+                android:layout_marginBottom="20dp" />
 
-            <!-- Microphone -->
+            <!-- Microphone Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#22FFFFFF"
-                app:strokeColor="#33FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/color_surface"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp">
 
                 <RelativeLayout
@@ -53,18 +66,19 @@
                     android:padding="16dp">
                     <ImageView
                         android:id="@+id/ivMic"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@android:drawable/ic_btn_speak_now"
-                        app:tint="@color/white" />
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_perm_mic"
+                        android:contentDescription="Microphone Icon"
+                        app:tint="@color/color_primary" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toEndOf="@id/ivMic"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="14dp"
                         android:text="Microphone"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <androidx.appcompat.widget.SwitchCompat
@@ -72,30 +86,30 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        app:thumbTint="@color/white"
-                        app:trackTint="#80FFFFFF" />
+                        app:thumbTint="@color/color_primary"
+                        app:trackTint="@color/border_color" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/ivMic"
-                        android:layout_marginStart="48dp"
+                        android:layout_marginStart="42dp"
+                        android:layout_marginTop="4dp"
                         android:text="Used to detect SOS trigger words."
-                        android:textColor="@color/white"
-                        android:alpha="0.8"
-                        android:textSize="14sp" />
+                        android:textColor="@color/color_on_surface_variant"
+                        android:textSize="13sp" />
                 </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Location -->
+            <!-- Location Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#22FFFFFF"
-                app:strokeColor="#33FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/color_surface"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp">
 
                 <RelativeLayout
@@ -104,18 +118,19 @@
                     android:padding="16dp">
                     <ImageView
                         android:id="@+id/ivLoc"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@android:drawable/ic_menu_mylocation"
-                        app:tint="@color/white" />
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_perm_location"
+                        android:contentDescription="Location Icon"
+                        app:tint="@color/color_primary" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toEndOf="@id/ivLoc"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="14dp"
                         android:text="Location"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <androidx.appcompat.widget.SwitchCompat
@@ -123,30 +138,30 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        app:thumbTint="@color/white"
-                        app:trackTint="#80FFFFFF" />
+                        app:thumbTint="@color/color_primary"
+                        app:trackTint="@color/border_color" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/ivLoc"
-                        android:layout_marginStart="48dp"
+                        android:layout_marginStart="42dp"
+                        android:layout_marginTop="4dp"
                         android:text="Used to send your coordinates to contacts."
-                        android:textColor="@color/white"
-                        android:alpha="0.8"
-                        android:textSize="14sp" />
+                        android:textColor="@color/color_on_surface_variant"
+                        android:textSize="13sp" />
                 </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- SMS -->
+            <!-- SMS Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#22FFFFFF"
-                app:strokeColor="#33FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/color_surface"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp">
 
                 <RelativeLayout
@@ -155,18 +170,19 @@
                     android:padding="16dp">
                     <ImageView
                         android:id="@+id/ivSms"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@android:drawable/sym_action_chat"
-                        app:tint="@color/white" />
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_perm_sms"
+                        android:contentDescription="SMS Icon"
+                        app:tint="@color/color_primary" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toEndOf="@id/ivSms"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="14dp"
                         android:text="SMS"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <androidx.appcompat.widget.SwitchCompat
@@ -174,30 +190,30 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        app:thumbTint="@color/white"
-                        app:trackTint="#80FFFFFF" />
+                        app:thumbTint="@color/color_primary"
+                        app:trackTint="@color/border_color" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/ivSms"
-                        android:layout_marginStart="48dp"
+                        android:layout_marginStart="42dp"
+                        android:layout_marginTop="4dp"
                         android:text="Used to send automated emergency messages."
-                        android:textColor="@color/white"
-                        android:alpha="0.8"
-                        android:textSize="14sp" />
+                        android:textColor="@color/color_on_surface_variant"
+                        android:textSize="13sp" />
                 </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Camera -->
+            <!-- Camera Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#22FFFFFF"
-                app:strokeColor="#33FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/color_surface"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp">
 
                 <RelativeLayout
@@ -206,18 +222,19 @@
                     android:padding="16dp">
                     <ImageView
                         android:id="@+id/ivCam"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@android:drawable/ic_menu_camera"
-                        app:tint="@color/white" />
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_camera_white"
+                        android:contentDescription="Camera Icon"
+                        app:tint="@color/color_primary" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toEndOf="@id/ivCam"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="14dp"
                         android:text="Camera"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <androidx.appcompat.widget.SwitchCompat
@@ -225,30 +242,30 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        app:thumbTint="@color/white"
-                        app:trackTint="#80FFFFFF" />
+                        app:thumbTint="@color/color_primary"
+                        app:trackTint="@color/border_color" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/ivCam"
-                        android:layout_marginStart="48dp"
+                        android:layout_marginStart="42dp"
+                        android:layout_marginTop="4dp"
                         android:text="Used to capture photos for emergency reports."
-                        android:textColor="@color/white"
-                        android:alpha="0.8"
-                        android:textSize="14sp" />
+                        android:textColor="@color/color_on_surface_variant"
+                        android:textSize="13sp" />
                 </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Notifications -->
+            <!-- Notifications Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#22FFFFFF"
-                app:strokeColor="#33FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/color_surface"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp">
 
                 <RelativeLayout
@@ -257,18 +274,19 @@
                     android:padding="16dp">
                     <ImageView
                         android:id="@+id/ivNotif"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@android:drawable/ic_popup_reminder"
-                        app:tint="@color/white" />
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_perm_notification"
+                        android:contentDescription="Notification Icon"
+                        app:tint="@color/color_primary" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toEndOf="@id/ivNotif"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="14dp"
                         android:text="Notifications"
-                        android:textColor="@color/white"
-                        android:textSize="18sp"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <androidx.appcompat.widget.SwitchCompat
@@ -276,18 +294,18 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        app:thumbTint="@color/white"
-                        app:trackTint="#80FFFFFF" />
+                        app:thumbTint="@color/color_primary"
+                        app:trackTint="@color/border_color" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/ivNotif"
-                        android:layout_marginStart="48dp"
+                        android:layout_marginStart="42dp"
+                        android:layout_marginTop="4dp"
                         android:text="Used to keep the background service active."
-                        android:textColor="@color/white"
-                        android:alpha="0.8"
-                        android:textSize="14sp" />
+                        android:textColor="@color/color_on_surface_variant"
+                        android:textSize="13sp" />
                 </RelativeLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -297,14 +315,15 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnOpenSettings"
         android:layout_width="match_parent"
-        android:layout_height="55dp"
+        android:layout_height="52dp"
         android:layout_margin="16dp"
-        android:text="Open System Settings"
+        android:text="OPEN SYSTEM SETTINGS"
         android:textColor="@color/white"
-        app:backgroundTint="#33FFFFFF"
-        app:strokeColor="#44FFFFFF"
-        app:strokeWidth="1dp"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:backgroundTint="@color/color_primary"
         app:cornerRadius="12dp"
+        app:elevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

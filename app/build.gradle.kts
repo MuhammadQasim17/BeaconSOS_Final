@@ -19,12 +19,12 @@ val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY") ?: "AIzaSyC
 
 android {
     namespace = "com.alert.beaconsos"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.alert.beaconsos"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -108,6 +108,9 @@ dependencies {
 
     // Image Cropping
     implementation("com.github.CanHub:Android-Image-Cropper:4.5.0")
+
+    // Lottie Animations for professional micro-interactions
+    implementation("com.airbnb.android:lottie:6.3.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -3,53 +3,56 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/vibrant_gradient_bg">
+    android:background="@color/color_background">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:scrollbars="none"
+        android:clipToPadding="false"
         android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp"
+            android:padding="20dp"
             android:gravity="center_horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Safety Check-in"
-                android:textColor="@color/white"
-                android:textSize="26sp"
+                android:textColor="@color/color_on_surface"
+                android:textSize="24sp"
                 android:textStyle="bold"
-                android:layout_marginTop="16dp"/>
+                android:layout_marginTop="8dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Set a timer when entering an unsafe area. If you don't check in, we'll alert your contacts."
-                android:textColor="#B3FFFFFF"
-                android:textSize="14sp"
+                android:textColor="@color/color_on_surface_variant"
+                android:textSize="13sp"
                 android:gravity="center"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="32dp"/>
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="20dp"/>
 
+            <!-- Digital Timer Display Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#26FFFFFF"
-                app:strokeColor="#33FFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/color_surface"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="32dp"
+                    android:padding="24dp"
                     android:gravity="center">
 
                     <TextView
@@ -57,41 +60,62 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="00:00"
-                        android:textColor="@color/white"
-                        android:textSize="64sp"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="56sp"
                         android:textStyle="bold"
-                        android:fontFamily="sans-serif-thin" />
+                        android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.02" />
 
                     <TextView
                         android:id="@+id/tvTimerStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Inactive"
-                        android:textColor="#FFEB3B"
-                        android:textSize="14sp"
+                        android:textColor="@color/color_on_surface_variant"
+                        android:textSize="13sp"
                         android:textStyle="bold"
-                        android:layout_marginTop="8dp"/>
+                        android:letterSpacing="0.05"
+                        android:layout_marginTop="6dp"/>
+
+                    <!-- Reset / Clear Button with Outlined Crimson Boundary -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnResetTimer"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:text="RESET TIMER"
+                        android:textColor="@color/color_primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@android:color/transparent"
+                        app:strokeColor="@color/color_primary"
+                        app:strokeWidth="1.5dp"
+                        app:cornerRadius="12dp"
+                        android:paddingHorizontal="20dp"
+                        android:layout_marginTop="12dp"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Duration Selection Area -->
             <LinearLayout
                 android:id="@+id/layoutTimeSelection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="32dp">
+                android:layout_marginTop="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Select Duration"
-                    android:textColor="@color/white"
-                    android:textSize="12sp"
+                    android:textColor="@color/color_on_surface"
+                    android:textSize="14sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="10dp"
                     android:layout_gravity="center_horizontal"/>
 
+                <!-- Quick Duration Pills -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -100,197 +124,236 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnTime5"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="80dp"
-                        android:layout_height="60dp"
-                        android:text="5m"
-                        android:textColor="@color/white"
-                        app:strokeColor="#66FFFFFF"
-                        app:cornerRadius="16dp"
-                        android:layout_marginHorizontal="4dp"/>
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="5 Mins"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/color_surface"
+                        app:strokeColor="@color/border_color"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="12dp"
+                        android:layout_marginEnd="6dp"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnTime15"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="80dp"
-                        android:layout_height="60dp"
-                        android:text="15m"
-                        android:textColor="@color/white"
-                        app:strokeColor="#66FFFFFF"
-                        app:cornerRadius="16dp"
-                        android:layout_marginHorizontal="4dp"/>
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="15 Mins"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/color_surface"
+                        app:strokeColor="@color/border_color"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="12dp"
+                        android:layout_marginHorizontal="3dp"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnTime30"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="80dp"
-                        android:layout_height="60dp"
-                        android:text="30m"
-                        android:textColor="@color/white"
-                        app:strokeColor="#66FFFFFF"
-                        app:cornerRadius="16dp"
-                        android:layout_marginHorizontal="4dp"/>
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="30 Mins"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/color_surface"
+                        app:strokeColor="@color/border_color"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="12dp"
+                        android:layout_marginStart="6dp"/>
 
                 </LinearLayout>
 
-                <LinearLayout
+                <!-- Custom Duration Inputs Card -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_marginTop="16dp"
-                    android:background="#1AFFFFFF"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Custom Duration"
-                        android:textColor="#B3FFFFFF"
-                        android:textSize="12sp"
-                        android:layout_marginBottom="12dp"/>
+                    android:layout_marginTop="14dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="@color/color_surface"
+                    app:strokeColor="@color/border_color"
+                    app:strokeWidth="1dp"
+                    app:cardElevation="2dp">
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center">
-                            <EditText
-                                android:id="@+id/etHours"
-                                android:layout_width="50dp"
-                                android:layout_height="wrap_content"
-                                android:background="@android:color/transparent"
-                                android:gravity="center"
-                                android:hint="00"
-                                android:inputType="number"
-                                android:maxLength="2"
-                                android:textColor="@color/white"
-                                android:textColorHint="#4DFFFFFF"
-                                android:textSize="24sp"
-                                android:textStyle="bold" />
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="HH"
-                                android:textColor="#80FFFFFF"
-                                android:textSize="10sp"/>
-                        </LinearLayout>
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text=":"
-                            android:textColor="@color/white"
-                            android:textSize="24sp"
-                            android:layout_marginHorizontal="4dp"
+                            android:text="Custom Duration"
+                            android:textColor="@color/color_on_surface"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
                             android:layout_marginBottom="14dp"/>
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center">
-                            <EditText
-                                android:id="@+id/etMinutes"
-                                android:layout_width="50dp"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:background="@android:color/transparent"
-                                android:gravity="center"
-                                android:hint="00"
-                                android:inputType="number"
-                                android:maxLength="2"
-                                android:textColor="@color/white"
-                                android:textColorHint="#4DFFFFFF"
-                                android:textSize="24sp"
-                                android:textStyle="bold" />
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <EditText
+                                    android:id="@+id/etHours"
+                                    android:layout_width="60dp"
+                                    android:layout_height="52dp"
+                                    android:background="@drawable/outlined_input_bg"
+                                    android:gravity="center"
+                                    android:hint="00"
+                                    android:inputType="number"
+                                    android:maxLength="2"
+                                    android:textColor="@color/color_on_surface"
+                                    android:textColorHint="@color/text_hint"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="HH"
+                                    android:textColor="@color/color_on_surface_variant"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="4dp"/>
+                            </LinearLayout>
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="MM"
-                                android:textColor="#80FFFFFF"
-                                android:textSize="10sp"/>
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=":"
-                            android:textColor="@color/white"
-                            android:textSize="24sp"
-                            android:layout_marginHorizontal="4dp"
-                            android:layout_marginBottom="14dp"/>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center">
-                            <EditText
-                                android:id="@+id/etSeconds"
-                                android:layout_width="50dp"
-                                android:layout_height="wrap_content"
-                                android:background="@android:color/transparent"
-                                android:gravity="center"
-                                android:hint="00"
-                                android:inputType="number"
-                                android:maxLength="2"
-                                android:textColor="@color/white"
-                                android:textColorHint="#4DFFFFFF"
+                                android:text=":"
+                                android:textColor="@color/color_on_surface"
                                 android:textSize="24sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:layout_marginHorizontal="8dp"
+                                android:layout_marginBottom="16dp"/>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <EditText
+                                    android:id="@+id/etMinutes"
+                                    android:layout_width="60dp"
+                                    android:layout_height="52dp"
+                                    android:background="@drawable/outlined_input_bg"
+                                    android:gravity="center"
+                                    android:hint="00"
+                                    android:inputType="number"
+                                    android:maxLength="2"
+                                    android:textColor="@color/color_on_surface"
+                                    android:textColorHint="@color/text_hint"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="MM"
+                                    android:textColor="@color/color_on_surface_variant"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="4dp"/>
+                            </LinearLayout>
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="SS"
-                                android:textColor="#80FFFFFF"
-                                android:textSize="10sp"/>
+                                android:text=":"
+                                android:textColor="@color/color_on_surface"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                android:layout_marginHorizontal="8dp"
+                                android:layout_marginBottom="16dp"/>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                <EditText
+                                    android:id="@+id/etSeconds"
+                                    android:layout_width="60dp"
+                                    android:layout_height="52dp"
+                                    android:background="@drawable/outlined_input_bg"
+                                    android:gravity="center"
+                                    android:hint="00"
+                                    android:inputType="number"
+                                    android:maxLength="2"
+                                    android:textColor="@color/color_on_surface"
+                                    android:textColorHint="@color/text_hint"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="SS"
+                                    android:textColor="@color/color_on_surface_variant"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="4dp"/>
+                            </LinearLayout>
+
                         </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnApplyCustomTime"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:text="SET CUSTOM TIME"
+                            android:textColor="@color/color_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="@android:color/transparent"
+                            app:strokeColor="@color/color_primary"
+                            app:strokeWidth="1.5dp"
+                            app:cornerRadius="12dp"
+                            android:layout_marginTop="14dp"/>
 
                     </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnApplyCustomTime"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="SET CUSTOM TIME"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:layout_marginTop="8dp"
-                        app:rippleColor="#33FFFFFF"/>
-
-                </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
+            <!-- Action Buttons -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnStartTimer"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="32dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="24dp"
                 android:text="START SAFETY TIMER"
                 android:textStyle="bold"
                 android:textColor="@color/white"
-                app:backgroundTint="#2196F3"
-                app:cornerRadius="30dp"
-                app:elevation="4dp"/>
+                app:backgroundTint="@color/color_primary"
+                app:cornerRadius="12dp"
+                app:elevation="2dp"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCheckIn"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginTop="32dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="24dp"
                 android:text="I AM SAFE (CHECK-IN)"
                 android:textStyle="bold"
                 android:textColor="@color/white"
-                app:backgroundTint="#4CAF50"
-                app:cornerRadius="30dp"
-                app:elevation="4dp"
+                app:backgroundTint="@color/color_success"
+                app:cornerRadius="12dp"
+                app:elevation="2dp"
                 android:visibility="gone"/>
 
         </LinearLayout>

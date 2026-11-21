@@ -4,30 +4,41 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/color_background"
-    android:padding="16dp">
+    android:padding="20dp">
 
     <TextView
         android:id="@+id/tvHistoryHeader"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="SOS Emergency Log"
         android:textColor="@color/color_on_surface"
         android:textStyle="bold"
-        android:textSize="22sp"
-        android:layout_marginTop="8dp"
+        android:textSize="20sp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintEnd_toStartOf="@id/tvClearHistory"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/tvClearHistory"
+        style="@style/Widget.Material3.Button.OutlinedButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="CLEAR HISTORY"
+        android:layout_height="36dp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="0dp"
+        android:text="CLEAR"
         android:textColor="@color/color_primary"
         android:textSize="12sp"
         android:textStyle="bold"
-        android:padding="8dp"
-        android:background="?attr/selectableItemBackground"
+        app:icon="@drawable/ic_delete_new"
+        app:iconGravity="textStart"
+        app:iconPadding="4dp"
+        app:iconSize="16dp"
+        app:iconTint="@color/color_primary"
+        app:strokeColor="@color/color_primary"
+        app:strokeWidth="1.5dp"
+        app:cornerRadius="10dp"
         app:layout_constraintTop_toTopOf="@id/tvHistoryHeader"
         app:layout_constraintBottom_toBottomOf="@id/tvHistoryHeader"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -45,10 +56,10 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
             android:src="@drawable/ic_nav_history"
-            app:tint="@color/color_secondary"
+            app:tint="@color/color_primary"
             android:contentDescription="@string/empty_history_title" />
 
         <TextView
@@ -76,6 +87,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
+        android:scrollbars="none"
         app:layout_constraintTop_toBottomOf="@id/tvHistoryHeader"
         app:layout_constraintBottom_toBottomOf="parent" />
 

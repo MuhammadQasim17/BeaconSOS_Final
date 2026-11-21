@@ -4,44 +4,61 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_color">
+    android:fitsSystemWindows="true"
+    android:importantForAutofill="noExcludeDescendants"
+    android:background="@color/color_background"
+    tools:context=".ui.LoginActivity">
 
     <View
         android:id="@+id/viewHeaderBackground"
         android:layout_width="match_parent"
-        android:layout_height="280dp"
+        android:layout_height="240dp"
         android:background="@drawable/login_header_gradient"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/ivLogo"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="48dp"
-        android:contentDescription="Beacon SOS Logo"
-        android:src="@mipmap/ic_app_logo"
+    <!-- Circular Brand Logo Badge -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardLogoFrame"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="32dp"
+        app:cardCornerRadius="40dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@color/white"
+        app:strokeColor="@color/border_color"
+        app:strokeWidth="1.5dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:contentDescription="Beacon SOS Logo"
+            android:src="@mipmap/ic_app_logo"
+            app:shapeAppearanceOverlay="@style/CircleImage" />
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/tvAppName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/spacing_small"
         android:text="Beacon SOS"
         android:textColor="@color/white"
-        android:textSize="28sp"
+        android:textSize="26sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ivLogo" />
+        app:layout_constraintTop_toBottomOf="@id/cardLogoFrame" />
 
     <TextView
         android:id="@+id/tvTagline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/spacing_xxs"
         android:alpha="0.9"
         android:text="Your Safety, Our Priority"
         android:textColor="@color/white"
@@ -53,131 +70,177 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="@dimen/spacing_medium"
         android:fillViewport="true"
+        android:importantForAutofill="noExcludeDescendants"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTagline">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="24dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="8dp"
-            app:cardBackgroundColor="@color/white">
+            android:layout_margin="20dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/color_surface"
+            app:strokeColor="@color/border_color"
+            app:strokeWidth="1.5dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="20dp"
+                android:importantForAutofill="noExcludeDescendants">
 
                 <TextView
                     android:id="@+id/tvLoginTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/welcome_back_plain"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/color_on_surface"
                     android:textSize="24sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="@dimen/spacing_xs"
                     android:text="@string/login_to_continue"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/color_on_surface_variant"
                     android:textSize="14sp" />
 
+                <!-- Phone Input Field Container (Full Flag, Arrow Removed, Start Aligned) -->
                 <LinearLayout
+                    android:id="@+id/layoutPhoneContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="32dp"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="20dp"
                     android:background="@drawable/outlined_input_bg"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="16dp">
+                    android:paddingHorizontal="14dp">
 
-                    <com.hbb20.CountryCodePicker
-                        android:id="@+id/ccpLogin"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:ccp_arrowColor="@color/primary_blue"
-                        app:ccp_contentColor="@color/text_primary"
-                        app:ccp_defaultNameCode="PK"
-                        app:ccp_showFullName="false"
-                        app:ccp_showPhoneCode="true"
-                        app:ccp_textSize="16sp" />
+                    <FrameLayout
+                        android:layout_width="42dp"
+                        android:layout_height="match_parent">
 
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@color/divider_color" />
+                        <com.hbb20.CountryCodePicker
+                            android:id="@+id/ccpLogin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical|start"
+                            app:ccp_defaultNameCode="PK"
+                            app:ccp_showArrow="false"
+                            app:ccp_showFlag="true"
+                            app:ccp_showNameCode="false"
+                            app:ccp_showPhoneCode="false"
+                            app:ccp_showFullName="false"
+                            app:ccp_textSize="22sp" />
+                    </FrameLayout>
 
                     <EditText
                         android:id="@+id/etLoginPhone"
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="6dp"
                         android:background="@android:color/transparent"
                         android:hint="Phone Number"
-                        android:inputType="phone"
+                        android:inputType="phone|textNoSuggestions"
+                        android:importantForAutofill="no"
+                        android:autofillHints=""
                         android:paddingStart="0dp"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
+                        android:paddingEnd="0dp"
+                        android:textColor="@color/color_on_surface"
+                        android:textColorHint="@color/text_hint"
+                        android:textSize="15sp" />
                 </LinearLayout>
 
-                <com.google.android.material.textfield.TextInputLayout
+                <!-- Password Input Field Container (Perfect 1:1 Start Alignment) -->
+                <LinearLayout
+                    android:id="@+id/layoutPasswordContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="56dp"
                     android:layout_marginTop="16dp"
-                    app:hintEnabled="false"
-                    app:boxBackgroundMode="none"
-                    app:endIconMode="password_toggle"
-                    app:endIconDrawable="@drawable/password_toggle_selector"
-                    app:endIconTint="@color/text_secondary">
+                    android:background="@drawable/outlined_input_bg"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
+                    <FrameLayout
+                        android:layout_width="42dp"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center_vertical|start"
+                            android:layout_marginStart="2dp"
+                            android:src="@drawable/ic_lock_security"
+                            app:tint="@color/color_primary"
+                            android:contentDescription="Password Icon" />
+                    </FrameLayout>
+
+                    <EditText
                         android:id="@+id/etLoginPassword"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:background="@drawable/outlined_input_bg"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@android:color/transparent"
                         android:hint="Password"
-                        android:inputType="textPassword"
-                        android:paddingHorizontal="16dp"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:inputType="textPassword|textNoSuggestions"
+                        android:importantForAutofill="no"
+                        android:autofillHints=""
+                        android:textColor="@color/color_on_surface"
+                        android:textColorHint="@color/text_hint"
+                        android:textSize="15sp" />
+
+                    <ImageView
+                        android:id="@+id/ivToggleLoginPassword"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_visibility_off"
+                        app:tint="@color/color_primary"
+                        android:padding="2dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Toggle Password" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvForgotPassword"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:layout_marginTop="12dp"
-                    android:padding="4dp"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:padding="@dimen/spacing_xs"
                     android:text="Forgot Password?"
-                    android:textColor="@color/primary_blue"
+                    android:textColor="@color/color_primary"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:visibility="gone" />
 
+                <!-- High Impact Primary Action Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="32dp"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="28dp"
+                    android:backgroundTint="@color/color_primary"
                     android:text="LOGIN"
                     android:textAllCaps="false"
+                    android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    app:cornerRadius="12dp" />
+                    app:cornerRadius="12dp"
+                    app:elevation="4dp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="@dimen/spacing_large"
                     android:gravity="center"
                     android:orientation="horizontal">
 
@@ -185,16 +248,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/dont_have_account"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/color_on_surface_variant"
                         android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tvGoToSignup"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="4dp"
+                        android:padding="@dimen/spacing_xs"
                         android:text="Sign Up"
-                        android:textColor="@color/primary_blue"
+                        android:textColor="@color/color_primary"
                         android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>

@@ -19,7 +19,6 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -109,15 +108,24 @@ public class TrustedContactsActivity extends BaseActivity {
         customLoading = findViewById(R.id.customLoading);
         tvLoadingText = findViewById(R.id.tvLoadingText);
 
+        View btnCloseAddCard = findViewById(R.id.btnCloseAddCard);
+        View btnClearAll = findViewById(R.id.btnClearAllContacts);
+
         btnToggleAdd.setOnClickListener(v -> {
-            if (cardAddContact.getVisibility() == View.GONE) {
-                cardAddContact.setVisibility(View.VISIBLE);
-                btnToggleAdd.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-            } else {
-                cardAddContact.setVisibility(View.GONE);
-                btnToggleAdd.setImageResource(android.R.drawable.ic_input_add);
-            }
+            cardAddContact.setVisibility(View.VISIBLE);
+            btnToggleAdd.setVisibility(View.GONE);
         });
+
+        if (btnCloseAddCard != null) {
+            btnCloseAddCard.setOnClickListener(v -> {
+                cardAddContact.setVisibility(View.GONE);
+                btnToggleAdd.setVisibility(View.VISIBLE);
+            });
+        }
+
+        if (btnClearAll != null) {
+            btnClearAll.setOnClickListener(v -> handleClearAllContacts());
+        }
 
         findViewById(R.id.btnAddContact).setOnClickListener(v -> addContact());
         findViewById(R.id.btnPickContact).setOnClickListener(v -> pickContact());
@@ -125,6 +133,32 @@ public class TrustedContactsActivity extends BaseActivity {
         rvContacts.setLayoutManager(new LinearLayoutManager(this));
         
         observeContacts();
+    }
+
+    private void handleClearAllContacts() {
+        List<Contact> currentContacts = triggerManager.getContacts();
+        if (currentContacts == null || currentContacts.isEmpty()) {
+            Toast.makeText(this, "No contacts to clear", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        showGlassyConfirmDialog(
+                "Clear All Contacts",
+                "Are you sure you want to delete all trusted contacts?",
+                "CLEAR ALL",
+                () -> {
+                    showLoading("Clearing All Contacts");
+                    if (userId != null) {
+                        for (Contact c : currentContacts) {
+                            db.collection("users").document(userId).collection("contacts").document(c.getId()).delete();
+                        }
+                    }
+                    triggerManager.saveContacts(new ArrayList<>());
+                    updateList(new ArrayList<>());
+                    hideLoading();
+                    Toast.makeText(this, "All trusted contacts cleared", Toast.LENGTH_SHORT).show();
+                }
+        );
     }
 
     private void showLoading(String message) {
@@ -145,16 +179,15 @@ public class TrustedContactsActivity extends BaseActivity {
     private void observeContacts() {
         if (userId == null) return;
         
-        showLoading("Syncing Trusted Contacts");
-        
-        // Listen for real-time updates from Firestore
+        List<Contact> localContacts = triggerManager.getContacts();
+        if (localContacts != null && !localContacts.isEmpty()) {
+            updateList(localContacts);
+        }
+
         contactsListener = db.collection("users").document(userId).collection("contacts")
             .addSnapshotListener((value, error) -> {
-                hideLoading();
                 if (error != null) {
                     Log.e(TAG, "Listen failed.", error);
-                    Toast.makeText(this, "Failed to load contacts: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    updateList(new ArrayList<>());
                     return;
                 }
 
@@ -194,7 +227,6 @@ public class TrustedContactsActivity extends BaseActivity {
 
         showLoading("Adding Contact");
 
-        // Generate a new document reference to get a unique ID
         com.google.firebase.firestore.DocumentReference newContactRef = db.collection("users").document(userId).collection("contacts").document();
         String contactId = newContactRef.getId();
         
@@ -207,7 +239,7 @@ public class TrustedContactsActivity extends BaseActivity {
                 etPhone.setText("");
                 etRelation.setText("");
                 cardAddContact.setVisibility(View.GONE);
-                btnToggleAdd.setImageResource(android.R.drawable.ic_input_add);
+                btnToggleAdd.setVisibility(View.VISIBLE);
                 Toast.makeText(TrustedContactsActivity.this, getString(R.string.msg_contact_added), Toast.LENGTH_SHORT).show();
             })
             .addOnFailureListener(e -> {
@@ -219,11 +251,15 @@ public class TrustedContactsActivity extends BaseActivity {
 
     private void updateList(List<Contact> contacts) {
         View emptyState = findViewById(R.id.layoutEmptyState);
+        View btnClearAll = findViewById(R.id.btnClearAllContacts);
+        
         if (contacts == null || contacts.isEmpty()) {
             if (emptyState != null) emptyState.setVisibility(View.VISIBLE);
+            if (btnClearAll != null) btnClearAll.setVisibility(View.GONE);
             rvContacts.setVisibility(View.GONE);
         } else {
             if (emptyState != null) emptyState.setVisibility(View.GONE);
+            if (btnClearAll != null) btnClearAll.setVisibility(View.VISIBLE);
             rvContacts.setVisibility(View.VISIBLE);
             ContactsAdapter adapter = new ContactsAdapter(contacts);
             rvContacts.setAdapter(adapter);
@@ -248,6 +284,15 @@ public class TrustedContactsActivity extends BaseActivity {
             intent.setData(Uri.parse("tel:" + number));
             startActivity(intent);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -290,7 +335,6 @@ public class TrustedContactsActivity extends BaseActivity {
             holder.tvPhone.setText(contact.getPhoneNumber());
             holder.tvRelation.setText(contact.getRelation());
             
-            // Fix: Add click listener to open EditContactActivity
             holder.itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(TrustedContactsActivity.this, EditContactActivity.class);
                 intent.putExtra("contact_id", contact.getId());

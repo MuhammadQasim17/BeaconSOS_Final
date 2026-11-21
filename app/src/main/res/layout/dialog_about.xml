@@ -3,15 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="0dp"
-    app:cardElevation="0dp"
-    app:cardBackgroundColor="#CC000000"
-    app:strokeColor="#4DFFFFFF"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="@color/color_surface"
+    app:strokeColor="@color/border_color"
     app:strokeWidth="1dp">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -19,20 +20,37 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_gravity="center"
-                android:src="@mipmap/ic_app_logo"
-                android:layout_marginBottom="12dp"
-                android:contentDescription="App Logo"/>
+            <!-- App Logo Badge Container -->
+            <FrameLayout
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="12dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    app:cardCornerRadius="36dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/color_surface_variant"
+                    app:strokeColor="@color/border_color"
+                    app:strokeWidth="1dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="12dp"
+                        android:src="@mipmap/ic_app_logo"
+                        android:contentDescription="App Logo"/>
+                </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/app_name"
-                android:textColor="@color/white"
-                android:textSize="20sp"
+                android:textColor="@color/color_on_surface"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:gravity="center"
                 android:layout_marginBottom="2dp"/>
@@ -41,32 +59,32 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/tagline"
-                android:textColor="#99FFFFFF"
-                android:textSize="12sp"
+                android:textColor="@color/color_on_surface_variant"
+                android:textSize="13sp"
                 android:gravity="center"
                 android:layout_marginBottom="20dp"/>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#1AFFFFFF"
+                android:background="@color/border_color"
                 android:layout_marginBottom="20dp"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="OUR MISSION"
-                android:textColor="#FFEB3B"
-                android:textSize="10sp"
+                android:textColor="@color/color_primary"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.15"
+                android:letterSpacing="0.12"
                 android:layout_marginBottom="8dp"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Beacon SOS provides a seamless safety bridge, ensuring assistance is always one gesture away. We leverage smart technology to keep you and your network protected 24/7."
-                android:textColor="#E0FFFFFF"
+                android:textColor="@color/color_on_surface"
                 android:textSize="13sp"
                 android:lineSpacingExtra="4dp"
                 android:layout_marginBottom="20dp"/>
@@ -75,13 +93,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="CORE CAPABILITIES"
-                android:textColor="#FFEB3B"
-                android:textSize="10sp"
+                android:textColor="@color/color_primary"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.15"
+                android:letterSpacing="0.12"
                 android:layout_marginBottom="16dp"/>
 
-            <!-- Feature List with small fixed-size icons -->
+            <!-- Capability Feature List -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -111,7 +129,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#1AFFFFFF"
+                android:background="@color/border_color"
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="16dp"/>
 
@@ -119,8 +137,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Version 1.0.0 • Secure &amp; Encrypted\nDesigned for Peace of Mind"
-                android:textColor="#66FFFFFF"
-                android:textSize="10sp"
+                android:textColor="@color/color_on_surface_variant"
+                android:textSize="11sp"
                 android:gravity="center"
                 android:lineSpacingExtra="2dp"
                 android:layout_marginBottom="20dp"/>
@@ -128,15 +146,14 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAboutClose"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="52dp"
                 android:text="CLOSE"
                 android:textColor="@color/white"
-                android:textSize="13sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                app:cornerRadius="24dp"
-                app:backgroundTint="#26FFFFFF"
-                app:strokeColor="#33FFFFFF"
-                app:strokeWidth="1dp" />
+                app:cornerRadius="12dp"
+                app:backgroundTint="@color/color_primary"
+                app:elevation="4dp" />
 
         </LinearLayout>
     </ScrollView>

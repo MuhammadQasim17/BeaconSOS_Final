@@ -14,8 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.alert.beaconsos.R;
-import com.alert.beaconsos.data.TriggerManager;
-import com.alert.beaconsos.services.BeaconService;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.Locale;
@@ -24,7 +22,7 @@ public class SafetyTimerFragment extends Fragment {
 
     private TextView tvTimerDisplay, tvTimerStatus;
     private EditText etHours, etMinutes, etSeconds;
-    private MaterialButton btnStart, btnCheckIn, btnApplyCustomTime;
+    private MaterialButton btnStart, btnCheckIn, btnApplyCustomTime, btnResetTimer;
     private View layoutTimeSelection;
     
     private CountDownTimer countDownTimer;
@@ -44,6 +42,7 @@ public class SafetyTimerFragment extends Fragment {
         etMinutes = view.findViewById(R.id.etMinutes);
         etSeconds = view.findViewById(R.id.etSeconds);
         btnApplyCustomTime = view.findViewById(R.id.btnApplyCustomTime);
+        btnResetTimer = view.findViewById(R.id.btnResetTimer);
         layoutTimeSelection = view.findViewById(R.id.layoutTimeSelection);
 
         MaterialButton btn5 = view.findViewById(R.id.btnTime5);
@@ -75,6 +74,10 @@ public class SafetyTimerFragment extends Fragment {
             etSeconds.clearFocus();
         });
 
+        if (btnResetTimer != null) {
+            btnResetTimer.setOnClickListener(v -> resetTimer());
+        }
+
         btnStart.setOnClickListener(v -> startTimer());
         btnCheckIn.setOnClickListener(v -> stopTimer());
 
@@ -99,6 +102,25 @@ public class SafetyTimerFragment extends Fragment {
         updateCountDownText();
     }
 
+    private void resetTimer() {
+        if (timerRunning) {
+            stopTimer();
+        } else {
+            timeLeftInMillis = 0;
+            updateCountDownText();
+            tvTimerStatus.setText("Inactive");
+            if (isAdded()) {
+                tvTimerStatus.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.color_on_surface_variant));
+            }
+        }
+        if (etHours != null) etHours.setText("");
+        if (etMinutes != null) etMinutes.setText("");
+        if (etSeconds != null) etSeconds.setText("");
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "Timer reset to 00:00", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void startTimer() {
         if (timeLeftInMillis <= 0) {
             Toast.makeText(getContext(), "Please select a duration first", Toast.LENGTH_SHORT).show();
@@ -107,7 +129,7 @@ public class SafetyTimerFragment extends Fragment {
 
         timerRunning = true;
         tvTimerStatus.setText("PROTECTION ACTIVE");
-        tvTimerStatus.setTextColor(0xFF4CAF50);
+        tvTimerStatus.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.color_success));
         btnStart.setVisibility(View.GONE);
         btnCheckIn.setVisibility(View.VISIBLE);
         layoutTimeSelection.setVisibility(View.GONE);
@@ -123,7 +145,7 @@ public class SafetyTimerFragment extends Fragment {
             public void onFinish() {
                 timerRunning = false;
                 tvTimerStatus.setText("TIMER EXPIRED - SOS TRIGGERED");
-                tvTimerStatus.setTextColor(0xFFD32F2F);
+                tvTimerStatus.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.color_error));
                 triggerSos();
             }
         }.start();
@@ -137,11 +159,15 @@ public class SafetyTimerFragment extends Fragment {
         timeLeftInMillis = 0;
         updateCountDownText();
         tvTimerStatus.setText("Inactive");
-        tvTimerStatus.setTextColor(0xFFFFEB3B);
+        if (isAdded()) {
+            tvTimerStatus.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.color_on_surface_variant));
+        }
         btnStart.setVisibility(View.VISIBLE);
         btnCheckIn.setVisibility(View.GONE);
         layoutTimeSelection.setVisibility(View.VISIBLE);
-        Toast.makeText(getContext(), "Safety Check-in Successful", Toast.LENGTH_SHORT).show();
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "Safety Check-in Successful", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateCountDownText() {
@@ -159,16 +185,20 @@ public class SafetyTimerFragment extends Fragment {
     }
 
     private void triggerSos() {
-        if (getActivity() != null) {
-            // We can't directly call the service's private method, but we can trigger it via a broadcast or intent
-            // Since BeaconService is already running and monitoring, we can simulate an SOS trigger.
-            // For now, let's show a toast and we can implement a proper trigger mechanism.
+        if (getActivity() != null && getContext() != null) {
             Toast.makeText(getContext(), "SOS ALERT SENT AUTOMATICALLY!", Toast.LENGTH_LONG).show();
-            
-            // To properly trigger the same logic as Shake/Voice, we should communicate with BeaconService
             android.content.Intent intent = new android.content.Intent(getContext(), com.alert.beaconsos.services.BeaconService.class);
             intent.setAction("TRIGGER_SOS_FROM_TIMER");
             getActivity().startService(intent);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+            countDownTimer = null;
         }
     }
 }

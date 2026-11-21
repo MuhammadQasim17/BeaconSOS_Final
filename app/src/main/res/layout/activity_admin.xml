@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="?attr/colorSurface">
+    android:background="@color/color_background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -16,8 +16,8 @@
             android:id="@+id/appBarLayoutAdmin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            app:elevation="0dp"
+            android:background="@color/color_surface"
+            app:elevation="2dp"
             app:layout_constraintTop_toTopOf="parent">
 
             <androidx.appcompat.widget.Toolbar
@@ -25,14 +25,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:title="Admin Dashboard"
+                app:titleCentered="true"
                 app:titleTextColor="@color/white"
-                app:navigationIcon="?attr/homeAsUpIndicator"
-                app:navigationIconTint="@color/white" />
+                app:navigationIcon="@drawable/ic_back_white" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:fillViewport="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/appBarLayoutAdmin">
 
@@ -46,15 +47,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Overview"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="22sp"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <!-- Stats Grid -->
                 <GridLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="12dp"
                     android:columnCount="2"
                     android:rowCount="1">
 
@@ -66,8 +67,8 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="16dp"
                         app:cardElevation="2dp"
-                        app:cardBackgroundColor="?attr/colorSurface"
-                        app:strokeColor="?attr/dividerHorizontal"
+                        app:cardBackgroundColor="@color/color_surface"
+                        app:strokeColor="@color/border_color"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
@@ -78,19 +79,21 @@
                             android:gravity="center">
 
                             <TextView
+                                android:id="@+id/tvTotalUsersCount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="156"
+                                android:text="--"
                                 android:textSize="24sp"
                                 android:textStyle="bold"
-                                android:textColor="?attr/colorPrimary" />
+                                android:textColor="@color/color_primary" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
                                 android:text="Total Users"
                                 android:textSize="12sp"
-                                android:textColor="?android:attr/textColorSecondary" />
+                                android:textColor="@color/text_hint" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -102,8 +105,8 @@
                         android:layout_margin="4dp"
                         app:cardCornerRadius="16dp"
                         app:cardElevation="2dp"
-                        app:cardBackgroundColor="?attr/colorSurface"
-                        app:strokeColor="?attr/dividerHorizontal"
+                        app:cardBackgroundColor="@color/color_surface"
+                        app:strokeColor="@color/border_color"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
@@ -114,19 +117,21 @@
                             android:gravity="center">
 
                             <TextView
+                                android:id="@+id/tvActiveAlertsCount"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="42"
+                                android:text="0"
                                 android:textSize="24sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/error_red" />
+                                android:textColor="@color/color_error" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
                                 android:text="Active Alerts"
                                 android:textSize="12sp"
-                                android:textColor="?android:attr/textColorSecondary" />
+                                android:textColor="@color/text_hint" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </GridLayout>
@@ -136,7 +141,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:text="User Management"
-                    android:textColor="?attr/colorOnSurface"
+                    android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -145,27 +150,74 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="?attr/colorSurface"
-                    app:strokeColor="?attr/dividerHorizontal"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/color_surface"
+                    app:strokeColor="@color/border_color"
                     app:strokeWidth="1dp">
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvUsers"
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="400dp"
-                        android:padding="8dp" />
+                        android:layout_height="wrap_content"
+                        android:minHeight="240dp">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvUsers"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clipToPadding="false"
+                            android:padding="8dp" />
+
+                        <!-- Empty State View -->
+                        <LinearLayout
+                            android:id="@+id/layoutEmptyUsers"
+                            android:layout_width="match_parent"
+                            android:layout_height="240dp"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="24dp"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:contentDescription="No Users"
+                                android:src="@drawable/ic_profile_new"
+                                app:tint="@color/text_hint" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:text="No Users Registered"
+                                android:textColor="@color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:gravity="center"
+                                android:text="Registered users will appear here."
+                                android:textColor="@color/text_hint"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                    </FrameLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogoutAdmin"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="52dp"
                     android:layout_marginTop="24dp"
+                    android:layout_marginBottom="16dp"
+                    android:backgroundTint="@color/color_error"
                     android:text="LOGOUT ADMIN"
+                    android:textColor="@color/white"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
                     app:cornerRadius="12dp"
-                    android:backgroundTint="@color/error_red"
-                    android:textColor="?attr/colorOnPrimary" />
+                    app:elevation="2dp" />
 
             </LinearLayout>
         </ScrollView>

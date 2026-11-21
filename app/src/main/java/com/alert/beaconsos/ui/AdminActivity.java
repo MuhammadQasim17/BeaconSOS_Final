@@ -102,16 +102,26 @@ public class AdminActivity extends BaseActivity {
         finish();
     }
 
+    private View layoutEmptyUsers;
+    private TextView tvTotalUsersCount;
+
     private void initAdminUi() {
         setContentView(R.layout.activity_admin);
 
         triggerManager = new TriggerManager(this);
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
+        androidx.appcompat.widget.Toolbar toolbarAdmin = findViewById(R.id.toolbarAdmin);
+        if (toolbarAdmin != null) {
+            toolbarAdmin.setNavigationOnClickListener(v -> finish());
+        }
+
         rvUsers = findViewById(R.id.rvUsers);
         btnLogoutAdmin = findViewById(R.id.btnLogoutAdmin);
         customLoading = findViewById(R.id.customLoading);
         tvLoadingText = findViewById(R.id.tvLoadingText);
+        layoutEmptyUsers = findViewById(R.id.layoutEmptyUsers);
+        tvTotalUsersCount = findViewById(R.id.tvTotalUsersCount);
 
         rvUsers.setLayoutManager(new LinearLayoutManager(this));
         userList = new ArrayList<>();
@@ -156,6 +166,20 @@ public class AdminActivity extends BaseActivity {
                     }
                 }
                 adapter.notifyDataSetChanged();
+                
+                if (tvTotalUsersCount != null) {
+                    tvTotalUsersCount.setText(String.valueOf(userList.size()));
+                }
+
+                if (layoutEmptyUsers != null && rvUsers != null) {
+                    if (userList.isEmpty()) {
+                        rvUsers.setVisibility(View.GONE);
+                        layoutEmptyUsers.setVisibility(View.VISIBLE);
+                    } else {
+                        rvUsers.setVisibility(View.VISIBLE);
+                        layoutEmptyUsers.setVisibility(View.GONE);
+                    }
+                }
             }
 
             @Override

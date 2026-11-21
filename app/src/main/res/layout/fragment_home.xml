@@ -3,11 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/vibrant_gradient_bg">
+    android:background="@color/color_background">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:scrollbars="none"
         android:fillViewport="true">
 
         <LinearLayout
@@ -17,6 +18,7 @@
             android:padding="24dp"
             android:gravity="center_horizontal">
 
+            <!-- Header Row: Welcome Text & Glowing Protection Pill -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -34,29 +36,29 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Hello!"
-                        android:textColor="@color/white"
-                        android:textSize="26sp"
+                        android:textColor="@color/color_on_surface"
+                        android:textSize="22sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Beacon SOS Active"
-                        android:textColor="@color/white"
-                        android:alpha="0.8"
-                        android:textSize="14sp"
-                        android:layout_marginTop="4dp" />
+                        android:textColor="@color/color_on_surface_variant"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
                 </LinearLayout>
 
-                <!-- Protection Status Card -->
+                <!-- Protection Status Header (Glow Pill Badge) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="0dp"
-                    app:cardBackgroundColor="#33FFFFFF"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_color"
+                    app:cardBackgroundColor="@color/color_surface"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -65,19 +67,19 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="8dp">
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:paddingHorizontal="4dp">
+                            android:orientation="horizontal">
 
                             <View
                                 android:id="@+id/statusDot"
-                                android:layout_width="8dp"
-                                android:layout_height="8dp"
+                                android:layout_width="10dp"
+                                android:layout_height="10dp"
                                 android:background="@drawable/status_dot_green" />
 
                             <TextView
@@ -86,9 +88,10 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
                                 android:text="PROTECTED"
-                                android:textColor="@color/white"
-                                android:textSize="11sp"
-                                android:textStyle="bold" />
+                                android:textColor="@color/color_success"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -97,22 +100,23 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             android:visibility="gone"
-                            android:layout_marginTop="8dp"
-                            android:paddingHorizontal="4dp">
+                            android:layout_marginTop="8dp">
 
                             <TextView
                                 android:id="@+id/tvStatusMic"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="• Mic: Active"
-                                android:textSize="10sp" />
+                                android:textColor="@color/color_on_surface_variant"
+                                android:textSize="11sp" />
 
                             <TextView
                                 android:id="@+id/tvStatusLoc"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="• Location: Active"
-                                android:textSize="10sp"
+                                android:textColor="@color/color_on_surface_variant"
+                                android:textSize="11sp"
                                 android:layout_marginTop="2dp" />
 
                             <TextView
@@ -120,157 +124,229 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="• SMS: Active"
-                                android:textSize="10sp"
+                                android:textColor="@color/color_on_surface_variant"
+                                android:textSize="11sp"
                                 android:layout_marginTop="2dp" />
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- SOS Button -->
-            <FrameLayout
-                android:layout_width="220dp"
-                android:layout_height="220dp"
-                android:layout_marginTop="20dp">
+            <!-- SOS Focal Point (Luminous Crimson Radial Ring & Pulsing Centerpiece) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="24dp"
+                android:gravity="center"
+                android:orientation="vertical">
 
-                <View
-                    android:layout_width="220dp"
-                    android:layout_height="220dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/emergency_pulse" />
+                <FrameLayout
+                    android:layout_width="270dp"
+                    android:layout_height="270dp">
 
-                <Button
-                    android:id="@+id/btnEmergency"
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/emergency_button_bg"
-                    android:elevation="12dp"
-                    android:text="SOS"
-                    android:textColor="@color/white"
-                    android:textSize="32sp"
+                    <!-- Outer Pulsing Glow Ring -->
+                    <View
+                        android:id="@+id/sosPulseRing"
+                        android:layout_width="270dp"
+                        android:layout_height="270dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/emergency_pulse" />
+
+                    <!-- Main Emergency SOS Button -->
+                    <Button
+                        android:id="@+id/btnEmergency"
+                        android:layout_width="190dp"
+                        android:layout_height="190dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/emergency_button_bg"
+                        android:elevation="12dp"
+                        android:stateListAnimator="@null"
+                        android:text="SOS"
+                        android:textColor="@color/white"
+                        android:textSize="40sp"
+                        android:textStyle="bold"
+                        android:shadowColor="#99000000"
+                        android:shadowDx="0"
+                        android:shadowDy="3"
+                        android:shadowRadius="6"
+                        app:backgroundTint="@null" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="TAP FOR EMERGENCY SOS"
+                    android:textColor="@color/color_primary"
+                    android:textSize="13sp"
                     android:textStyle="bold"
-                    app:backgroundTint="@null" />
-            </FrameLayout>
+                    android:letterSpacing="0.08" />
+            </LinearLayout>
 
-            <!-- Spacer to push buttons to the bottom -->
+            <!-- Flexible Spacer -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <!-- Bottom Row for Icon-Only Buttons with Labels -->
+            <!-- Polished 3-Column Quick Action Grid Layout -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="40dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="20dp"
                 android:orientation="horizontal"
-                android:gravity="top"
+                android:gravity="center"
                 android:baselineAligned="false"
                 android:weightSum="3">
 
-                <!-- Left Button: Emergency Services -->
-                <LinearLayout
+                <!-- Action Card 1: Helpline -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardCallEmergency"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="100dp"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    android:layout_marginEnd="6dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="@color/color_surface"
+                    app:strokeColor="@color/border_color"
+                    app:strokeWidth="1dp"
+                    app:cardElevation="2dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnCallEmergency"
-                        android:layout_width="80dp"
-                        android:layout_height="64dp"
-                        android:padding="0dp"
-                        app:cornerRadius="32dp"
-                        android:backgroundTint="#33FFFFFF"
-                        app:elevation="0dp"
-                        app:icon="@drawable/emergency_services_new"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconSize="40dp"
-                        app:iconTint="@null"
-                        app:rippleColor="#20FFFFFF" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Helpline"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:alpha="0.9" />
-                </LinearLayout>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCallEmergency"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:padding="0dp"
+                            android:clickable="false"
+                            android:focusable="false"
+                            app:cornerRadius="12dp"
+                            android:backgroundTint="@android:color/transparent"
+                            app:icon="@drawable/ic_call"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconSize="28dp"
+                            app:iconTint="@color/color_primary" />
 
-                <!-- Center Button: SOS Messages -->
-                <LinearLayout
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Helpline"
+                            android:textColor="@color/color_on_surface"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Action Card 2: SOS Message -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAlertMessage"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="100dp"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    android:layout_marginHorizontal="3dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="@color/color_surface"
+                    app:strokeColor="@color/border_color"
+                    app:strokeWidth="1dp"
+                    app:cardElevation="2dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAlertMessage"
-                        android:layout_width="80dp"
-                        android:layout_height="64dp"
-                        android:padding="0dp"
-                        app:cornerRadius="32dp"
-                        android:backgroundTint="#33FFFFFF"
-                        app:elevation="0dp"
-                        app:icon="@drawable/sos_messages_new"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconSize="40dp"
-                        app:iconTint="@null"
-                        app:rippleColor="#20FFFFFF" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="SOS Message"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:alpha="0.9" />
-                </LinearLayout>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAlertMessage"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:padding="0dp"
+                            android:clickable="false"
+                            android:focusable="false"
+                            app:cornerRadius="12dp"
+                            android:backgroundTint="@android:color/transparent"
+                            app:icon="@drawable/ic_perm_sms"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconSize="28dp"
+                            app:iconTint="@color/color_primary" />
 
-                <!-- Right Button: Trusted Contacts -->
-                <LinearLayout
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="SOS Message"
+                            android:textColor="@color/color_on_surface"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Action Card 3: Contacts -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTrustedContacts"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="100dp"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    android:layout_marginStart="6dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="@color/color_surface"
+                    app:strokeColor="@color/border_color"
+                    app:strokeWidth="1dp"
+                    app:cardElevation="2dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTrustedContacts"
-                        android:layout_width="80dp"
-                        android:layout_height="64dp"
-                        android:padding="0dp"
-                        app:cornerRadius="32dp"
-                        android:backgroundTint="#33FFFFFF"
-                        app:elevation="0dp"
-                        app:icon="@drawable/trusted_contacts_new_img"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconSize="40dp"
-                        app:iconTint="@null"
-                        app:rippleColor="#20FFFFFF" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Contacts"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:alpha="0.9" />
-                </LinearLayout>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTrustedContacts"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:padding="0dp"
+                            android:clickable="false"
+                            android:focusable="false"
+                            app:cornerRadius="12dp"
+                            android:backgroundTint="@android:color/transparent"
+                            app:icon="@drawable/ic_contacts_user"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconSize="28dp"
+                            app:iconTint="@color/color_primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Contacts"
+                            android:textColor="@color/color_on_surface"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 

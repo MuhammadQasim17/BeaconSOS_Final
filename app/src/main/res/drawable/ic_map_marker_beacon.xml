@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="48dp"
+    android:viewportWidth="40"
+    android:viewportHeight="48">
+
+    <!-- Pin Base Shadow -->
+    <path
+        android:fillColor="#33000000"
+        android:pathData="M20,44c4,0 8,-1.5 8,-3s-4,-3 -8,-3 -8,1.5 -8,3 4,3 8,3z" />
+
+    <!-- Outer Crimson Pin Body -->
+    <path
+        android:fillColor="#EF4444"
+        android:pathData="M20,2C10.6,2 3,9.6 3,19c0,11.5 17,25 17,25s17,-13.5 17,-25C37,9.6 29.4,2 20,2z" />
+
+    <!-- Inner White Circle Ring -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,11a8,8 0 1,0 0.001,16.001A8,8 0 0,0 20,11z" />
+
+    <!-- Center Crimson Beacon Dot -->
+    <path
+        android:fillColor="#EF4444"
+        android:pathData="M20,15a4,4 0 1,0 0.001,8.001A4,4 0 0,0 20,15z" />
+</vector>

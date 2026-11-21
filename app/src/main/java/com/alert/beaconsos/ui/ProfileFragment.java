@@ -1,7 +1,6 @@
 package com.alert.beaconsos.ui;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,7 +14,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.alert.beaconsos.R;
@@ -94,7 +92,6 @@ public class ProfileFragment extends Fragment {
             if (getActivity() instanceof BaseActivity) {
                 ((BaseActivity) getActivity()).showGlassyConfirmDialog("Logout", "Are you sure you want to logout?", "Logout", this::performLogout);
             } else {
-                // Fallback if activity is not BaseActivity
                 performLogout();
             }
         });
@@ -134,7 +131,7 @@ public class ProfileFragment extends Fragment {
                                 triggerManager.saveUserName(user.getName());
                                 triggerManager.saveUserPhone(user.getPhone());
                                 triggerManager.saveProfileImageUri(user.getProfileImageUri());
-                                loadUserData(); // Refresh UI
+                                loadUserData();
                             }
                         }
                     }
@@ -148,13 +145,11 @@ public class ProfileFragment extends Fragment {
         String firebaseEmail = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getEmail() : null;
         String phoneToShow = triggerManager.getUserPhone();
 
-        // Failsafe: If logged in via our virtual email system, derive the phone from the auth email
         if (firebaseEmail != null && firebaseEmail.endsWith("@beaconsos.app")) {
             String derivedPhone = "+" + firebaseEmail.replace("@beaconsos.app", "");
             if (!derivedPhone.equals(phoneToShow)) {
                 phoneToShow = derivedPhone;
                 triggerManager.saveUserPhone(derivedPhone);
-                // Sync the correction back to DB
                 String uid = mAuth.getUid();
                 if (uid != null) {
                     FirebaseDatabase.getInstance().getReference("users").child(uid).child("phone").setValue(derivedPhone);
@@ -168,20 +163,21 @@ public class ProfileFragment extends Fragment {
         String imageUriString = triggerManager.getProfileImageUri();
         if (ivProfilePic != null) {
             if (imageUriString != null && !imageUriString.isEmpty()) {
+                ivProfilePic.setPadding(0, 0, 0, 0);
+                ivProfilePic.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Glide.with(this)
                         .load(imageUriString)
-                        .placeholder(R.drawable.ic_user_fallback)
-                        .error(R.drawable.ic_user_fallback)
+                        .placeholder(R.drawable.ic_user_avatar_default)
+                        .error(R.drawable.ic_user_avatar_default)
                         .centerCrop()
-                        .override(512, 512) // High resolution for large display
+                        .override(512, 512)
                         .into(ivProfilePic);
                 ivProfilePic.setImageTintList(null);
             } else {
-                // Use the new gray user icon for fallback
-                ivProfilePic.setImageResource(R.drawable.ic_user_fallback);
+                ivProfilePic.setImageResource(R.drawable.ic_user_avatar_default);
                 ivProfilePic.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                // Apply gray tint as requested
-                ivProfilePic.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.text_secondary)));
+                ivProfilePic.setPadding(0, 0, 0, 0);
+                ivProfilePic.setImageTintList(null);
             }
         }
     }

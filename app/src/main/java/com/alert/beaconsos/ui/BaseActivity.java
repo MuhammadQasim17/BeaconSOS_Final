@@ -7,9 +7,12 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Path;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -17,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -27,8 +31,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.core.view.MenuItemCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.TriggerManager;
@@ -45,6 +48,20 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         applyThemeMode();
         super.onCreate(savedInstanceState);
+        setupStatusBar();
+    }
+
+    protected void setupStatusBar() {
+        Window window = getWindow();
+        boolean isDark = isNightMode();
+        WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(window, window.getDecorView());
+        insetsController.setAppearanceLightStatusBars(!isDark);
+        insetsController.setAppearanceLightNavigationBars(!isDark);
+    }
+
+    protected boolean isNightMode() {
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
     }
 
     private void applyThemeMode() {
@@ -96,54 +113,108 @@ public class BaseActivity extends AppCompatActivity {
     protected void updateBottomNavProfileIcon(BottomNavigationView bnv) {
         if (bnv == null) return;
         
-        // 1. Disable global tinting
-        bnv.setItemIconTintList(null);
-
-        // 2. Apply tints to all items EXCEPT Profile
+        // 1. Set global icon tint list for navigation items
         ColorStateList navTint = ContextCompat.getColorStateList(this, R.color.nav_item_color);
-        Menu menu = bnv.getMenu();
-        for (int i = 0; i < menu.size(); i++) {
-            MenuItem item = menu.getItem(i);
-            if (item.getItemId() != R.id.nav_profile) {
-                MenuItemCompat.setIconTintList(item, navTint);
-            } else {
-                MenuItemCompat.setIconTintList(item, null);
-            }
-        }
+        bnv.setItemIconTintList(navTint);
 
-        // 3. Load the actual Profile Photo
+        // 2. Load custom user profile photo if set, or use standard Flaticon line-art outline vector icon
         TriggerManager triggerManager = new TriggerManager(this);
         String imageUriString = triggerManager.getProfileImageUri();
+        Menu menu = bnv.getMenu();
         MenuItem profileItem = menu.findItem(R.id.nav_profile);
 
-        if (imageUriString == null || imageUriString.isEmpty()) {
-            // If no custom profile photo, use the vector drawable directly to keep it sharp
-            if (profileItem != null) {
-                profileItem.setIcon(R.drawable.ic_profile_new);
-                // Ensure no tint is applied to the profile icon
-                MenuItemCompat.setIconTintList(profileItem, null);
-            }
-        } else {
-            // Load custom profile photo via Glide
+        if (profileItem == null) return;
+
+        if (imageUriString != null && !imageUriString.isEmpty()) {
+            boolean isSelected = profileItem.isChecked();
+            int activeColor = ContextCompat.getColor(this, R.color.color_primary);
+            int inactiveColor = ContextCompat.getColor(this, R.color.color_on_surface_variant);
+
             Glide.with(this)
                     .asBitmap()
                     .load(imageUriString)
-                    .placeholder(R.drawable.ic_profile_new)
-                    .error(R.drawable.ic_profile_new)
                     .circleCrop()
-                    .override(512, 512) // Matched high resolution with large profile to prevent blurriness
+                    .override(128, 128)
                     .into(new CustomTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                            if (profileItem != null) {
-                                BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), resource);
-                                profileItem.setIcon(bitmapDrawable);
-                            }
+                            ProfilePhotoDrawable photoDrawable = new ProfilePhotoDrawable(resource, isSelected, activeColor, inactiveColor);
+                            profileItem.setIcon(photoDrawable);
                         }
 
                         @Override
                         public void onLoadCleared(@Nullable Drawable placeholder) { }
                     });
+        } else {
+            // No custom photo set: use clean line-art Flaticon outline vector icon matching Home, Timer, Map, History
+            profileItem.setIcon(R.drawable.ic_nav_profile);
+        }
+    }
+
+    /**
+     * Circular Custom Profile Photo Drawable with Active/Inactive Ring
+     * Used when the user has uploaded a custom profile photo!
+     */
+    public static class ProfilePhotoDrawable extends Drawable {
+        private final Bitmap bitmap;
+        private final Paint photoPaint;
+        private final Paint borderPaint;
+
+        public ProfilePhotoDrawable(Bitmap bitmap, boolean isSelected, int activeColor, int inactiveColor) {
+            this.bitmap = bitmap;
+            this.photoPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+            this.borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            this.borderPaint.setStyle(Paint.Style.STROKE);
+            this.borderPaint.setStrokeWidth(4.0f);
+            this.borderPaint.setColor(isSelected ? activeColor : inactiveColor);
+        }
+
+        @Override
+        public void draw(@NonNull Canvas canvas) {
+            if (bitmap == null || bitmap.isRecycled()) return;
+
+            Rect bounds = getBounds();
+            float centerX = bounds.exactCenterX();
+            float centerY = bounds.exactCenterY();
+            float width = bounds.width();
+            float height = bounds.height();
+            float size = Math.min(width, height);
+            float radius = size / 2f - 3f;
+
+            if (radius <= 0) return;
+
+            // Draw circular cropped custom profile photo
+            canvas.save();
+            Path clipPath = new Path();
+            clipPath.addCircle(centerX, centerY, radius - 2f, Path.Direction.CW);
+            canvas.clipPath(clipPath);
+            RectF destRect = new RectF(centerX - radius + 2f, centerY - radius + 2f, centerX + radius - 2f, centerY + radius - 2f);
+            canvas.drawBitmap(bitmap, null, destRect, photoPaint);
+            canvas.restore();
+
+            // Draw outer active (Crimson) or inactive (Border) ring
+            canvas.drawCircle(centerX, centerY, radius, borderPaint);
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+            photoPaint.setAlpha(alpha);
+            borderPaint.setAlpha(alpha);
+        }
+
+        @Override
+        public void setColorFilter(@Nullable ColorFilter colorFilter) {
+            // NO-OP: Ignore BottomNavigationView automatic color tinting so the custom photo retains its real colors!
+        }
+
+        @Override
+        public void setTintList(@Nullable ColorStateList tint) {
+            // NO-OP: Ignore setTintList!
+        }
+
+        @Override
+        public int getOpacity() {
+            return PixelFormat.TRANSLUCENT;
         }
     }
 
@@ -152,12 +223,12 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void showGlassyConfirmDialog(String title, String message, String positiveText, String negativeText, Runnable onConfirm) {
+        if (isFinishing() || isDestroyed()) return;
         View dialogView = LayoutInflater.from(this).inflate(R.layout.layout_glassy_dialog, null);
         AlertDialog dialog = new AlertDialog.Builder(this, R.style.GlassyDialog)
                 .setView(dialogView)
                 .create();
 
-        // Ensure the dialog window background is transparent
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
@@ -185,7 +256,6 @@ public class BaseActivity extends AppCompatActivity {
 
         dialog.show();
 
-        // Set dialog width
         if (dialog.getWindow() != null) {
             WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
             layoutParams.copyFrom(dialog.getWindow().getAttributes());

@@ -1,49 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Semantic Design Tokens (Light Theme) -->
-    <color name="color_primary">#1A73E8</color>
-    <color name="color_primary_variant">#0D47A1</color>
-    <color name="color_secondary">#4285F4</color>
-    <color name="color_background">#F8F9FA</color>
+    <!-- Light Theme Tokens (Crisp, High-Contrast Light Mode) -->
+    <color name="color_primary">#EF4444</color>
+    <color name="color_primary_variant">#DC2626</color>
+    <color name="color_secondary">#F87171</color>
+    <color name="color_background">#F8FAFC</color>
     <color name="color_surface">#FFFFFF</color>
-    <color name="color_surface_variant">#F1F3F4</color>
+    <color name="color_surface_variant">#F1F5F9</color>
     <color name="color_on_primary">#FFFFFF</color>
-    <color name="color_on_surface">#202124</color>
-    <color name="color_on_surface_variant">#5F6368</color>
-    <color name="color_error">#D93025</color>
-    <color name="color_success">#1E8E3E</color>
-    <color name="color_warning">#FBBC04</color>
-    <color name="color_outline">#DADCE0</color>
+    <color name="color_on_surface">#0F172A</color>
+    <color name="color_on_surface_variant">#64748B</color>
+    <color name="color_error">#EF4444</color>
+    <color name="color_success">#16A34A</color>
+    <color name="color_warning">#D97706</color>
+    <color name="color_outline">#CBD5E1</color>
 
     <!-- Palette Colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="sky_blue">#E3F2FD</color>
-    <color name="soft_blue_bg">#EDF2FA</color>
-    <color name="light_blue_bg">#E8F0FE</color>
+    <color name="sky_blue">#E2E8F0</color>
+    <color name="soft_blue_bg">#F8FAFC</color>
+    <color name="light_blue_bg">#F1F5F9</color>
+    <color name="input_bg">#F8FAFC</color>
+    <color name="border_color">#CBD5E1</color>
 
-    <!-- Emergency Gradient Palette (SOS & Home Screen) -->
-    <color name="grad_start">#FF416C</color>
-    <color name="grad_center">#6A11CB</color>
-    <color name="grad_end">#2575FC</color>
-    <color name="gradient_start">#1A73E8</color>
-    <color name="gradient_end">#0D47A1</color>
-    <color name="grad_highlight_1">#60FF4B2B</color>
-    <color name="grad_highlight_2">#6000FF88</color>
+    <!-- Light Slate Gradient -->
+    <color name="grad_start">#F8FAFC</color>
+    <color name="grad_center">#F1F5F9</color>
+    <color name="grad_end">#E2E8F0</color>
+    <color name="gradient_start">#F8FAFC</color>
+    <color name="gradient_end">#E2E8F0</color>
+    <color name="grad_highlight_1">#10EF4444</color>
+    <color name="grad_highlight_2">#10CBD5E1</color>
 
     <!-- Navigation & Chat -->
-    <color name="nav_active">#FFFFFF</color>
-    <color name="nav_inactive">#80FFFFFF</color>
-    <color name="nav_selected_bg">#E8F0FE</color>
-    <color name="chat_sent_bg">#DCF8C6</color>
+    <color name="nav_active">#EF4444</color>
+    <color name="nav_inactive">#64748B</color>
+    <color name="nav_selected_bg">#F1F5F9</color>
+    <color name="chat_sent_bg">#FEE2E2</color>
     <color name="chat_received_bg">#FFFFFF</color>
-    <color name="status_gray">#888888</color>
-    <color name="status_blue">#34B7F1</color>
-    <color name="input_field_bg">#FFFFFF</color>
+    <color name="status_gray">#64748B</color>
+    <color name="status_blue">#0284C7</color>
+    <color name="input_field_bg">#F8FAFC</color>
 
     <!-- Compatibility Aliases -->
     <color name="primary_blue">@color/color_primary</color>
-    <color name="primary_dark_blue">@color/color_primary_variant</color>
+    <color name="primary_dark_blue">#0F172A</color>
     <color name="primary_dark">@color/color_primary_variant</color>
     <color name="accent_blue">@color/color_secondary</color>
     <color name="background_color">@color/color_background</color>
@@ -61,8 +63,8 @@
     <color name="text_dark">@color/color_on_surface</color>
     <color name="text_secondary">@color/color_on_surface_variant</color>
     <color name="gray_text">@color/color_on_surface_variant</color>
-    <color name="text_hint">#70757A</color>
-    <color name="divider_color">@color/color_outline</color>
-    <color name="border_color">@color/color_outline</color>
-    <color name="gray_light">@color/color_surface_variant</color>
+    <color name="text_hint">#94A3B8</color>
+    <color name="divider_color">@color/border_color</color>
+    <color name="gray_light">@color/border_color</color>
+    <color name="icon_color">@color/color_on_surface</color>
 </resources>

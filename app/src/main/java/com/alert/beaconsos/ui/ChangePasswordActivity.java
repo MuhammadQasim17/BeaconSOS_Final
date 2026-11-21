@@ -1,22 +1,24 @@
 package com.alert.beaconsos.ui;
 
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.alert.beaconsos.R;
+import com.alert.beaconsos.utils.LoadingUtils;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class ChangePasswordActivity extends AppCompatActivity {
+public class ChangePasswordActivity extends BaseActivity {
 
     private EditText etCurrent, etNew, etConfirm;
     private Button btnUpdate;
@@ -44,6 +46,14 @@ public class ChangePasswordActivity extends AppCompatActivity {
         customLoading = findViewById(R.id.customLoading);
         tvLoadingText = findViewById(R.id.tvLoadingText);
 
+        ImageView ivToggleCurrent = findViewById(R.id.ivToggleCurrentPassword);
+        ImageView ivToggleNew = findViewById(R.id.ivToggleNewPassword);
+        ImageView ivToggleConfirm = findViewById(R.id.ivToggleConfirmPassword);
+
+        setupPasswordVisibilityToggle(ivToggleCurrent, etCurrent);
+        setupPasswordVisibilityToggle(ivToggleNew, etNew);
+        setupPasswordVisibilityToggle(ivToggleConfirm, etConfirm);
+
         btnUpdate.setOnClickListener(v -> {
             String current = etCurrent.getText().toString().trim();
             String newPass = etNew.getText().toString().trim();
@@ -65,6 +75,29 @@ public class ChangePasswordActivity extends AppCompatActivity {
             }
             
             updatePasswordInFirebase(current, newPass);
+        });
+    }
+
+    private void setupPasswordVisibilityToggle(ImageView toggleButton, EditText editText) {
+        if (toggleButton == null || editText == null) return;
+        
+        // Ensure default state is eye-off (hidden password mode)
+        toggleButton.setImageResource(R.drawable.ic_visibility_off);
+
+        toggleButton.setOnClickListener(v -> {
+            int selection = editText.getSelectionStart();
+            int currentInputType = editText.getInputType();
+            
+            if ((currentInputType & InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                // Switch to hidden password mode & set eye-off icon
+                editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                toggleButton.setImageResource(R.drawable.ic_visibility_off);
+            } else {
+                // Switch to visible password mode & set eye icon
+                editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                toggleButton.setImageResource(R.drawable.ic_visibility);
+            }
+            editText.setSelection(selection >= 0 ? Math.min(selection, editText.getText().length()) : editText.getText().length());
         });
     }
 
@@ -100,13 +133,15 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private void showLoading(String message) {
         if (customLoading != null) {
             customLoading.setVisibility(View.VISIBLE);
-            if (tvLoadingText != null) tvLoadingText.setText(message);
+            if (tvLoadingText != null) tvLoadingText.setText(message.toUpperCase());
+            LoadingUtils.startCustomAnimation(customLoading);
         }
     }
 
     private void hideLoading() {
         if (customLoading != null) {
             customLoading.setVisibility(View.GONE);
+            LoadingUtils.stopCustomAnimation(customLoading);
         }
     }
 }

@@ -35,12 +35,15 @@ public class EmergencyNumbersActivity extends BaseActivity {
         setContentView(R.layout.activity_emergency_numbers);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Emergency Services");
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setDisplayShowHomeEnabled(true);
+                getSupportActionBar().setTitle("Emergency Services");
+            }
+            toolbar.setNavigationOnClickListener(v -> finish());
         }
-        toolbar.setNavigationOnClickListener(v -> finish());
 
         RecyclerView rvNumbers = findViewById(R.id.rvEmergencyNumbers);
         rvNumbers.setLayoutManager(new LinearLayoutManager(this));
@@ -74,6 +77,15 @@ public class EmergencyNumbersActivity extends BaseActivity {
             intent.setData(Uri.parse("tel:" + number));
             startActivity(intent);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

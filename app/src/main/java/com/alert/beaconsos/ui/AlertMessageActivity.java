@@ -46,8 +46,10 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -203,6 +205,33 @@ public class AlertMessageActivity extends AppCompatActivity {
         if (btnSaveConfig != null) {
             btnSaveConfig.setVisibility(View.GONE);
         }
+
+        if (userId != null && !userId.isEmpty()) {
+            FirebaseFirestore.getInstance().collection("users").document(userId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String cloudMsg = documentSnapshot.getString("emergencyMessage");
+                            if (cloudMsg != null && !cloudMsg.isEmpty()) {
+                                etAlertMessage.setText(cloudMsg);
+                                triggerManager.saveEmergencyMessage(cloudMsg);
+                            }
+
+                            String cloudVoice = documentSnapshot.getString("voiceTriggerPhrase");
+                            if (cloudVoice != null && !cloudVoice.isEmpty()) {
+                                etVoiceTrigger.setText(cloudVoice);
+                                triggerManager.saveVoiceTriggerPhrase(cloudVoice);
+                            }
+
+                            List<String> cloudIds = (List<String>) documentSnapshot.get("selectedContactIds");
+                            if (cloudIds != null && !cloudIds.isEmpty()) {
+                                currentSelectedIds = new HashSet<>(cloudIds);
+                                triggerManager.saveSelectedContactIds(currentSelectedIds);
+                                setupContactsList();
+                            }
+                            checkIfChanged();
+                        }
+                    });
+        }
     }
 
     private void setupContactsList() {
@@ -328,10 +357,27 @@ public class AlertMessageActivity extends AppCompatActivity {
     }
 
     private void saveConfiguration() {
-        triggerManager.saveEmergencyMessage(etAlertMessage.getText().toString());
-        triggerManager.saveVoiceTriggerPhrase(etVoiceTrigger.getText().toString());
-        triggerManager.saveSelectedContactIds(new HashSet<>(currentSelectedIds));
-        
+        String msg = etAlertMessage.getText().toString();
+        String voice = etVoiceTrigger.getText().toString();
+        Set<String> selectedIds = new HashSet<>(currentSelectedIds);
+
+        triggerManager.saveEmergencyMessage(msg);
+        triggerManager.saveVoiceTriggerPhrase(voice);
+        triggerManager.saveSelectedContactIds(selectedIds);
+
+        if (userId != null && !userId.isEmpty()) {
+            Map<String, Object> configUpdates = new HashMap<>();
+            configUpdates.put("emergencyMessage", msg);
+            configUpdates.put("voiceTriggerPhrase", voice);
+            configUpdates.put("selectedContactIds", new ArrayList<>(selectedIds));
+
+            FirebaseFirestore.getInstance().collection("users").document(userId)
+                    .set(configUpdates, SetOptions.merge());
+
+            com.google.firebase.database.FirebaseDatabase.getInstance().getReference("users").child(userId)
+                    .updateChildren(configUpdates);
+        }
+
         Toast.makeText(this, "Configuration saved", Toast.LENGTH_SHORT).show();
         btnSaveConfig.setVisibility(View.GONE);
     }

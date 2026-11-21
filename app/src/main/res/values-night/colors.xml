@@ -1,49 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Semantic Design Tokens (Dark Theme) -->
-    <color name="color_primary">#9ECAFF</color>
-    <color name="color_primary_variant">#004789</color>
-    <color name="color_secondary">#7F98FF</color>
-    <color name="color_background">#121316</color>
-    <color name="color_surface">#1E1F23</color>
-    <color name="color_surface_variant">#2A2C32</color>
-    <color name="color_on_primary">#003260</color>
-    <color name="color_on_surface">#E2E2E6</color>
-    <color name="color_on_surface_variant">#C4C6D0</color>
-    <color name="color_error">#FFB4AB</color>
-    <color name="color_success">#B4F3A9</color>
-    <color name="color_warning">#FFDF9E</color>
-    <color name="color_outline">#44474E</color>
+    <!-- Dark Mode-First Obsidian Palette Safety Design System -->
+    <color name="color_primary">#EF4444</color>
+    <color name="color_primary_variant">#DC2626</color>
+    <color name="color_secondary">#F87171</color>
+    <color name="color_background">#0A0E17</color>
+    <color name="color_surface">#131B2E</color>
+    <color name="color_surface_variant">#0A0E17</color>
+    <color name="color_on_primary">#FFFFFF</color>
+    <color name="color_on_surface">#FFFFFF</color>
+    <color name="color_on_surface_variant">#94A3B8</color>
+    <color name="color_error">#EF4444</color>
+    <color name="color_success">#22C55E</color>
+    <color name="color_warning">#F59E0B</color>
+    <color name="color_outline">#1E293B</color>
 
     <!-- Palette Colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="sky_blue">#1A2533</color>
-    <color name="soft_blue_bg">#1E2530</color>
-    <color name="light_blue_bg">#1A2230</color>
+    <color name="sky_blue">#131B2E</color>
+    <color name="soft_blue_bg">#0A0E17</color>
+    <color name="light_blue_bg">#131B2E</color>
+    <color name="input_bg">#1A2235</color>
+    <color name="border_color">#334155</color>
 
-    <!-- Emergency Gradient Palette (SOS & Home Screen - Deep Dark Gradient) -->
-    <color name="grad_start">#4A0E1C</color>
-    <color name="grad_center">#2A0944</color>
-    <color name="grad_end">#0D2240</color>
-    <color name="gradient_start">#1A3D68</color>
-    <color name="gradient_end">#0D2240</color>
-    <color name="grad_highlight_1">#30FF4B2B</color>
-    <color name="grad_highlight_2">#3000FF88</color>
+    <!-- Unified Dark Slate Gradient -->
+    <color name="grad_start">#0A0E17</color>
+    <color name="grad_center">#0F172A</color>
+    <color name="grad_end">#131B2E</color>
+    <color name="gradient_start">#0A0E17</color>
+    <color name="gradient_end">#131B2E</color>
+    <color name="grad_highlight_1">#20EF4444</color>
+    <color name="grad_highlight_2">#101E293B</color>
 
     <!-- Navigation & Chat -->
-    <color name="nav_active">#FFFFFF</color>
-    <color name="nav_inactive">#80FFFFFF</color>
-    <color name="nav_selected_bg">#2D3545</color>
-    <color name="chat_sent_bg">#1E3A2B</color>
-    <color name="chat_received_bg">#25272C</color>
-    <color name="status_gray">#888888</color>
-    <color name="status_blue">#34B7F1</color>
-    <color name="input_field_bg">#25272C</color>
+    <color name="nav_active">#EF4444</color>
+    <color name="nav_inactive">#94A3B8</color>
+    <color name="nav_selected_bg">#131B2E</color>
+    <color name="chat_sent_bg">#991B1B</color>
+    <color name="chat_received_bg">#131B2E</color>
+    <color name="status_gray">#64748B</color>
+    <color name="status_blue">#38BDF8</color>
+    <color name="input_field_bg">#1A2235</color>
 
     <!-- Compatibility Aliases -->
     <color name="primary_blue">@color/color_primary</color>
-    <color name="primary_dark_blue">@color/color_primary_variant</color>
+    <color name="primary_dark_blue">@color/color_surface</color>
     <color name="primary_dark">@color/color_primary_variant</color>
     <color name="accent_blue">@color/color_secondary</color>
     <color name="background_color">@color/color_background</color>
@@ -61,9 +63,8 @@
     <color name="text_dark">@color/color_on_surface</color>
     <color name="text_secondary">@color/color_on_surface_variant</color>
     <color name="gray_text">@color/color_on_surface_variant</color>
-    <color name="text_hint">#8E9199</color>
-    <color name="divider_color">@color/color_outline</color>
-    <color name="border_color">@color/color_outline</color>
-    <color name="gray_light">@color/color_surface_variant</color>
+    <color name="text_hint">#94A3B8</color>
+    <color name="divider_color">@color/border_color</color>
+    <color name="gray_light">@color/border_color</color>
     <color name="icon_color">@color/color_on_surface</color>
 </resources>

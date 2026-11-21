@@ -6,18 +6,23 @@ import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.autofill.AutofillManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.view.Window;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.alert.beaconsos.R;
 import com.alert.beaconsos.data.TriggerManager;
@@ -27,11 +32,16 @@ import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.hbb20.CountryCodePicker;
 
@@ -60,9 +70,28 @@ public class SignupActivity extends BaseActivity {
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
 
     @Override
+    protected void setupStatusBar() {
+        super.setupStatusBar();
+        if (!isNightMode()) {
+            Window window = getWindow();
+            WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(window, window.getDecorView());
+            insetsController.setAppearanceLightStatusBars(false);
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getWindow().getDecorView().setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
+            AutofillManager afm = getSystemService(AutofillManager.class);
+            if (afm != null) {
+                afm.cancel();
+                afm.disableAutofillServices();
+            }
+        }
 
         triggerManager = new TriggerManager(this);
         mAuth = FirebaseAuth.getInstance();
@@ -88,8 +117,16 @@ public class SignupActivity extends BaseActivity {
         Button btnRegister = findViewById(R.id.btnRegister);
         TextView tvGoToLogin = findViewById(R.id.tvGoToLogin);
 
-        // Removed role selection
-        ccp.registerCarrierNumberEditText(etPhone);
+        if (ccp != null) {
+            ccp.showArrow(false);
+            ccp.registerCarrierNumberEditText(etPhone);
+        }
+
+        ImageView ivTogglePassword = findViewById(R.id.ivTogglePassword);
+        ImageView ivToggleConfirmPassword = findViewById(R.id.ivToggleConfirmPassword);
+
+        setupPasswordVisibilityToggle(ivTogglePassword, etPassword);
+        setupPasswordVisibilityToggle(ivToggleConfirmPassword, etConfirmPassword);
 
         setupPasswordValidation();
         setupPhoneAuthCallbacks();
@@ -101,16 +138,27 @@ public class SignupActivity extends BaseActivity {
         });
     }
 
+    private void setupPasswordVisibilityToggle(ImageView toggleButton, EditText editText) {
+        if (toggleButton == null || editText == null) return;
+        toggleButton.setImageResource(R.drawable.ic_visibility_off);
+        toggleButton.setOnClickListener(v -> {
+            int selection = editText.getSelectionStart();
+            int currentType = editText.getInputType();
+            if ((currentType & InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
+                editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                toggleButton.setImageResource(R.drawable.ic_visibility_off);
+            } else {
+                editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                toggleButton.setImageResource(R.drawable.ic_visibility);
+            }
+            if (selection >= 0) editText.setSelection(Math.min(selection, editText.getText().length()));
+        });
+    }
+
     private void setupPhoneAuthCallbacks() {
         mCallbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             @Override
             public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
-                // This callback will be invoked in two situations:
-                // 1 - Instant verification: In some cases the phone number can be instantly 
-                //     verified without needing to send or enter a code.
-                // 2 - Auto-retrieval: On some devices Google Play services can automatically 
-                //     detect the incoming verification SMS and perform verification without 
-                //     user action.
                 hideLoading();
                 verifyAndRegister(credential);
             }
@@ -152,7 +200,7 @@ public class SignupActivity extends BaseActivity {
                 .setTitle("Verify Phone Number")
                 .setView(dialogView)
                 .setCancelable(false)
-                .setPositiveButton("Verify", null) // Set later to prevent auto-dismiss
+                .setPositiveButton("Verify", null)
                 .setNegativeButton("Cancel", null)
                 .create();
 
@@ -238,7 +286,7 @@ public class SignupActivity extends BaseActivity {
             textView.setTextColor(ContextCompat.getColor(this, R.color.success_green));
         } else {
             textView.setText(invalidResId);
-            textView.setTextColor(ContextCompat.getColor(this, R.color.error_red));
+            textView.setTextColor(ContextCompat.getColor(this, R.color.text_hint));
         }
     }
 
@@ -294,7 +342,63 @@ public class SignupActivity extends BaseActivity {
             return;
         }
 
-        sendVerificationCode(ccp.getFullNumberWithPlus());
+        checkAccountExistsAndProceed(ccp.getFullNumberWithPlus());
+    }
+
+    private void checkAccountExistsAndProceed(String phoneNumber) {
+        if (!isNetworkAvailable()) {
+            showErrorDialog("Network Error", "Internet connection is required for security verification.");
+            return;
+        }
+
+        showLoading("Checking Account...");
+        String cleanPhone = phoneNumber.replaceAll("[^0-9]", "");
+        String normalizedPhone = "+" + cleanPhone;
+        String virtualEmail = cleanPhone + "@beaconsos.app";
+
+        mAuth.createUserWithEmailAndPassword(virtualEmail, "CheckAuthExistTemp123!")
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (mAuth.getCurrentUser() != null) {
+                            mAuth.getCurrentUser().delete().addOnCompleteListener(deleteTask -> {
+                                mAuth.signOut();
+                                hideLoading();
+                                sendVerificationCode(normalizedPhone);
+                            });
+                        } else {
+                            mAuth.signOut();
+                            hideLoading();
+                            sendVerificationCode(normalizedPhone);
+                        }
+                    } else {
+                        hideLoading();
+                        Exception e = task.getException();
+                        if (e instanceof FirebaseAuthUserCollisionException || 
+                           (e != null && e.getMessage() != null && (e.getMessage().toLowerCase().contains("already") || e.getMessage().toLowerCase().contains("collision") || e.getMessage().toLowerCase().contains("in-use") || e.getMessage().toLowerCase().contains("exist")))) {
+                            showAccountExistsDialog(normalizedPhone);
+                        } else {
+                            if (e != null && e.getMessage() != null && (e.getMessage().toLowerCase().contains("network") || e.getMessage().toLowerCase().contains("connection"))) {
+                                showErrorDialog("Network Error", "Internet connection is required for security verification.");
+                            } else {
+                                sendVerificationCode(normalizedPhone);
+                            }
+                        }
+                    }
+                });
+    }
+
+    private void showAccountExistsDialog(String phoneNumber) {
+        new AlertDialog.Builder(this)
+                .setTitle("Account Already Exists")
+                .setMessage("An account with the number " + phoneNumber + " is already registered.\n\nPlease log in to continue.")
+                .setPositiveButton("Go to Login", (dialog, which) -> {
+                    Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+                    intent.putExtra("prefill_phone", phoneNumber);
+                    startActivity(intent);
+                    finish();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void sendVerificationCode(String phoneNumber) {
@@ -347,7 +451,8 @@ public class SignupActivity extends BaseActivity {
         String name = etFullName.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         String phone = ccp.getFullNumberWithPlus();
-        String role = "User"; // Default role
+        String cleanPhone = phone.replaceAll("[^0-9]", "");
+        String role = "User";
 
         showLoading("Creating Your Account");
 
@@ -358,39 +463,46 @@ public class SignupActivity extends BaseActivity {
         }
 
         String userId = mAuth.getCurrentUser().getUid();
-        String virtualEmail = phone.replace("+", "") + "@beaconsos.app";
+        String virtualEmail = phone.replace("+", "").replaceAll("\\s+", "") + "@beaconsos.app";
         User user = new User(userId, name, virtualEmail, phone, role);
 
-        // Link with email and password to allow password-only login later
         AuthCredential credential = EmailAuthProvider.getCredential(virtualEmail, password);
         mAuth.getCurrentUser().linkWithCredential(credential)
                 .addOnCompleteListener(linkTask -> {
-                    // Continue even if linking fails (might fail if user already exists or other issues)
-                    // but usually it should succeed here.
-                    
-                    // Save to Realtime Database
-                    mDatabase.child("users").child(userId).setValue(user)
-                            .addOnSuccessListener(aVoid -> {
-                                // Also Save to Firestore for searching/groups
-                                mFirestore.collection("users").document(userId).set(user);
+                    if (linkTask.isSuccessful()) {
+                        mDatabase.child("registered_phones").child(cleanPhone).setValue(true);
+                        mDatabase.child("users").child(userId).setValue(user)
+                                .addOnSuccessListener(aVoid -> {
+                                    mFirestore.collection("users").document(userId).set(user);
 
-                                hideLoading();
-                                triggerManager.saveUserId(userId);
-                                triggerManager.saveUserName(user.getName());
-                                triggerManager.saveUserEmail(user.getEmail());
-                                triggerManager.saveUserPhone(user.getPhone());
-                                triggerManager.saveUserRole(user.getRole());
-                                triggerManager.setLoggedIn(true);
+                                    hideLoading();
+                                    triggerManager.saveUserId(userId);
+                                    triggerManager.saveUserName(user.getName());
+                                    triggerManager.saveUserEmail(user.getEmail());
+                                    triggerManager.saveUserPhone(user.getPhone());
+                                    triggerManager.saveUserRole(user.getRole());
+                                    triggerManager.setLoggedIn(true);
 
-                                Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                startActivity(intent);
-                                finish();
-                            })
-                            .addOnFailureListener(e -> {
-                                hideLoading();
-                                showErrorDialog("Database Error", "Failed to save profile: " + e.getMessage());
-                            });
+                                    Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    hideLoading();
+                                    showErrorDialog("Database Error", "Failed to save profile: " + e.getMessage());
+                                });
+                    } else {
+                        hideLoading();
+                        mAuth.signOut();
+                        Exception e = linkTask.getException();
+                        if (e instanceof FirebaseAuthUserCollisionException || (e != null && e.getMessage() != null && (e.getMessage().toLowerCase().contains("already") || e.getMessage().toLowerCase().contains("collision") || e.getMessage().toLowerCase().contains("in-use")))) {
+                            mDatabase.child("registered_phones").child(cleanPhone).setValue(true);
+                            showAccountExistsDialog(phone);
+                        } else {
+                            showErrorDialog("Registration Error", e != null ? e.getMessage() : "Failed to create account.");
+                        }
+                    }
                 });
     }
 }

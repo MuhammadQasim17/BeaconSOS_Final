@@ -1,6 +1,10 @@
 package com.alert.beaconsos.ui;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -53,6 +57,9 @@ public class HomeFragment extends Fragment {
     private View customLoading;
     private TextView tvLoadingText, tvWelcome;
 
+    private View sosPulseRing;
+    private AnimatorSet pulseAnimatorSet;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -73,31 +80,74 @@ public class HomeFragment extends Fragment {
         statusDot = view.findViewById(R.id.statusDot);
         customLoading = view.findViewById(R.id.customLoading);
         tvLoadingText = view.findViewById(R.id.tvLoadingText);
+        sosPulseRing = view.findViewById(R.id.sosPulseRing);
 
         Button btnEmergency = view.findViewById(R.id.btnEmergency);
-        Button btnCallEmergency = view.findViewById(R.id.btnCallEmergency);
-        Button btnAlertMessage = view.findViewById(R.id.btnAlertMessage);
-        Button btnTrustedContacts = view.findViewById(R.id.btnTrustedContacts);
+        
+        MaterialCardView cardCallEmergency = view.findViewById(R.id.cardCallEmergency);
+        MaterialCardView cardAlertMessage = view.findViewById(R.id.cardAlertMessage);
+        MaterialCardView cardTrustedContacts = view.findViewById(R.id.cardTrustedContacts);
 
         tvWelcome.setText(getString(R.string.welcome_back, triggerManager.getUserName()));
 
         btnEmergency.setOnClickListener(v -> triggerEmergencySms());
 
-        btnCallEmergency.setOnClickListener(v -> {
-            startActivity(new Intent(getActivity(), EmergencyNumbersActivity.class));
-        });
+        View.OnClickListener callHelplineListener = v -> {
+            Intent intent = new Intent(getActivity(), EmergencyNumbersActivity.class);
+            startActivity(intent);
+            if (getActivity() != null) getActivity().overridePendingTransition(0, 0);
+        };
+        
+        View.OnClickListener alertMessageListener = v -> {
+            Intent intent = new Intent(getActivity(), AlertMessageActivity.class);
+            startActivity(intent);
+            if (getActivity() != null) getActivity().overridePendingTransition(0, 0);
+        };
+        
+        View.OnClickListener contactsListener = v -> {
+            Intent intent = new Intent(getActivity(), TrustedContactsActivity.class);
+            startActivity(intent);
+            if (getActivity() != null) getActivity().overridePendingTransition(0, 0);
+        };
 
-        btnAlertMessage.setOnClickListener(v -> {
-            startActivity(new Intent(getActivity(), AlertMessageActivity.class));
-        });
+        if (cardCallEmergency != null) cardCallEmergency.setOnClickListener(callHelplineListener);
+        if (cardAlertMessage != null) cardAlertMessage.setOnClickListener(alertMessageListener);
+        if (cardTrustedContacts != null) cardTrustedContacts.setOnClickListener(contactsListener);
 
-        btnTrustedContacts.setOnClickListener(v -> {
-            startActivity(new Intent(getActivity(), TrustedContactsActivity.class));
-        });
+        View btnCallEmergency = view.findViewById(R.id.btnCallEmergency);
+        View btnAlertMessage = view.findViewById(R.id.btnAlertMessage);
+        View btnTrustedContacts = view.findViewById(R.id.btnTrustedContacts);
+
+        if (btnCallEmergency != null) btnCallEmergency.setOnClickListener(callHelplineListener);
+        if (btnAlertMessage != null) btnAlertMessage.setOnClickListener(alertMessageListener);
+        if (btnTrustedContacts != null) btnTrustedContacts.setOnClickListener(contactsListener);
 
         setupStatusCard();
+        startSosPulseAnimation();
 
         return view;
+    }
+
+    private void startSosPulseAnimation() {
+        if (sosPulseRing == null) return;
+
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(sosPulseRing, "scaleX", 0.92f, 1.15f, 0.92f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(sosPulseRing, "scaleY", 0.92f, 1.15f, 0.92f);
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(sosPulseRing, "alpha", 0.5f, 0.95f, 0.5f);
+
+        pulseAnimatorSet = new AnimatorSet();
+        pulseAnimatorSet.playTogether(scaleX, scaleY, alpha);
+        pulseAnimatorSet.setDuration(2200);
+        pulseAnimatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
+        pulseAnimatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (isAdded() && sosPulseRing != null && sosPulseRing.isAttachedToWindow()) {
+                    pulseAnimatorSet.start();
+                }
+            }
+        });
+        pulseAnimatorSet.start();
     }
 
     private void setupStatusCard() {
@@ -106,18 +156,16 @@ public class HomeFragment extends Fragment {
         cardStatus.setOnClickListener(v -> {
             boolean isVisible = layoutStatusDetails.getVisibility() == View.VISIBLE;
             
-            // Define a smoother transition
             AutoTransition transition = new AutoTransition();
-            transition.setDuration(400); // Slightly longer for a more fluid feel
+            transition.setDuration(350);
             transition.setInterpolator(new AccelerateDecelerateInterpolator());
             
-            // Animate the entire card row for a more consistent expansion
             TransitionManager.beginDelayedTransition((ViewGroup) cardStatus.getParent(), transition);
             
             if (isVisible) {
                 layoutStatusDetails.setVisibility(View.GONE);
             } else {
-                updateStatusUI(); // Refresh statuses before showing
+                updateStatusUI();
                 layoutStatusDetails.setVisibility(View.VISIBLE);
             }
         });
@@ -133,30 +181,19 @@ public class HomeFragment extends Fragment {
         boolean smsEnabled = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED 
                             && triggerManager.isSmsPermissionEnabled();
 
-        // Colors from resources
-        int green = ContextCompat.getColor(requireContext(), R.color.success_green);
-        int yellow = ContextCompat.getColor(requireContext(), R.color.warning_yellow);
-        int red = ContextCompat.getColor(requireContext(), R.color.error_red);
+        int green = ContextCompat.getColor(requireContext(), R.color.color_success);
+        int red = ContextCompat.getColor(requireContext(), R.color.color_error);
 
-        // Update main status text and dot color based on permissions
-        if (micEnabled && locEnabled) {
-            // Full protection (Mic + Location)
+        if (micEnabled || locEnabled || smsEnabled) {
             textViewStatus.setText("PROTECTED");
             textViewStatus.setTextColor(green);
             statusDot.setBackgroundResource(R.drawable.status_dot_green);
-        } else if (smsEnabled) {
-            // Partial protection (SMS only or SMS + one other)
-            textViewStatus.setText("PROTECTED");
-            textViewStatus.setTextColor(yellow);
-            statusDot.setBackgroundResource(R.drawable.status_dot_yellow);
         } else {
-            // No critical permissions granted
             textViewStatus.setText("UNPROTECTED");
             textViewStatus.setTextColor(red);
             statusDot.setBackgroundResource(R.drawable.status_dot_red);
         }
 
-        // Update detail texts with status-specific colors (Green if active, Red if off)
         tvStatusMic.setText("• Mic: " + (micEnabled ? "Active" : "Off"));
         tvStatusMic.setTextColor(micEnabled ? green : red);
 
@@ -172,6 +209,15 @@ public class HomeFragment extends Fragment {
         super.onResume();
         syncUserDataFromFirebase();
         updateStatusUI();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (pulseAnimatorSet != null) {
+            pulseAnimatorSet.cancel();
+            pulseAnimatorSet = null;
+        }
     }
 
     private void syncUserDataFromFirebase() {

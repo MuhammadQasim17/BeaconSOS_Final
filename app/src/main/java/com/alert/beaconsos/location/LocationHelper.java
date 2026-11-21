@@ -31,27 +31,64 @@ public class LocationHelper {
     }
 
     public void getLastLocation(OnLocationResultListener listener) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (listener == null) return;
+
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            listener.onLocationReceived(null);
             return;
         }
 
-        LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
-                .setMinUpdateIntervalMillis(5000)
-                .setMaxUpdates(1)
-                .build();
+        try {
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(lastLoc -> {
+                        if (lastLoc != null) {
+                            String url = "https://www.google.com/maps/search/?api=1&query=" + 
+                                         lastLoc.getLatitude() + "," + lastLoc.getLongitude();
+                            listener.onLocationReceived(url);
+                        } else {
+                            requestFreshLocation(listener);
+                        }
+                    })
+                    .addOnFailureListener(e -> requestFreshLocation(listener));
+        } catch (Exception e) {
+            listener.onLocationReceived(null);
+        }
+    }
 
-        fusedLocationClient.requestLocationUpdates(locationRequest, new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                Location location = locationResult.getLastLocation();
-                if (location != null) {
-                    String url = "https://www.google.com/maps/search/?api=1&query=" + 
-                                 location.getLatitude() + "," + location.getLongitude();
-                    listener.onLocationReceived(url);
+    @SuppressWarnings("MissingPermission")
+    private void requestFreshLocation(OnLocationResultListener listener) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            listener.onLocationReceived(null);
+            return;
+        }
+
+        try {
+            LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
+                    .setMinUpdateIntervalMillis(5000)
+                    .setMaxUpdates(1)
+                    .build();
+
+            LocationCallback callback = new LocationCallback() {
+                @Override
+                public void onLocationResult(@NonNull LocationResult locationResult) {
+                    super.onLocationResult(locationResult);
+                    Location location = locationResult.getLastLocation();
+                    if (location != null) {
+                        String url = "https://www.google.com/maps/search/?api=1&query=" + 
+                                     location.getLatitude() + "," + location.getLongitude();
+                        listener.onLocationReceived(url);
+                    } else {
+                        listener.onLocationReceived(null);
+                    }
+                    fusedLocationClient.removeLocationUpdates(this);
                 }
-                fusedLocationClient.removeLocationUpdates(this);
-            }
-        }, Looper.getMainLooper());
+            };
+
+            fusedLocationClient.requestLocationUpdates(locationRequest, callback, Looper.getMainLooper());
+        } catch (Exception e) {
+            listener.onLocationReceived(null);
+        }
     }
 }

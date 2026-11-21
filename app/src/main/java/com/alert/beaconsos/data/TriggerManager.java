@@ -2,6 +2,8 @@ package com.alert.beaconsos.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
@@ -357,6 +359,16 @@ public class TriggerManager {
         if (history.size() > 50) history.remove(history.size() - 1); // Keep last 50
         String json = gson.toJson(history);
         sharedPreferences.edit().putString(KEY_SOS_HISTORY, json).apply();
+
+        String userId = getUserId();
+        if (userId != null && !userId.isEmpty() && entry != null) {
+            try {
+                FirebaseDatabase.getInstance().getReference("users")
+                        .child(userId).child("sos_history").child(entry.getId()).setValue(entry);
+                FirebaseFirestore.getInstance().collection("users")
+                        .document(userId).collection("sos_history").document(entry.getId()).set(entry);
+            } catch (Exception ignored) {}
+        }
     }
 
     public List<SosHistoryEntry> getSosHistory() {
@@ -366,8 +378,21 @@ public class TriggerManager {
         return gson.fromJson(json, type);
     }
 
+    public void saveSosHistory(List<SosHistoryEntry> history) {
+        if (history == null) history = new ArrayList<>();
+        String json = gson.toJson(history);
+        sharedPreferences.edit().putString(KEY_SOS_HISTORY, json).apply();
+    }
+
     public void clearSosHistory() {
         sharedPreferences.edit().remove(KEY_SOS_HISTORY).apply();
+        String userId = getUserId();
+        if (userId != null && !userId.isEmpty()) {
+            try {
+                FirebaseDatabase.getInstance().getReference("users")
+                        .child(userId).child("sos_history").removeValue();
+            } catch (Exception ignored) {}
+        }
     }
 
     public void removeSosHistoryEntry(String entryId) {
@@ -383,6 +408,16 @@ public class TriggerManager {
         if (removed) {
             String json = gson.toJson(history);
             sharedPreferences.edit().putString(KEY_SOS_HISTORY, json).apply();
+        }
+
+        String userId = getUserId();
+        if (userId != null && !userId.isEmpty() && entryId != null) {
+            try {
+                FirebaseDatabase.getInstance().getReference("users")
+                        .child(userId).child("sos_history").child(entryId).removeValue();
+                FirebaseFirestore.getInstance().collection("users")
+                        .document(userId).collection("sos_history").document(entryId).delete();
+            } catch (Exception ignored) {}
         }
     }
 
